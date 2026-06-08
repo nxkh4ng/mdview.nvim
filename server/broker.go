@@ -35,7 +35,9 @@ func (b *Broker) Add() *Client {
 func (b *Broker) Remove(client *Client) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-
+	if _, exists := b.clients[client]; !exists {
+		return
+	}
 	delete(b.clients, client)
 	close(client.Events)
 }
