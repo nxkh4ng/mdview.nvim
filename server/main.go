@@ -1,11 +1,16 @@
 package main
 
 import (
+	"embed"
 	"fmt"
+	"io/fs"
 	"log"
 	"net"
 	"net/http"
 )
+
+//go:embed static/*
+var staticFiles embed.FS
 
 func main() {
 	// 1. Listen TCP on port 0
@@ -18,13 +23,25 @@ func main() {
 	port := listener.Addr().(*net.TCPAddr).Port
 	fmt.Println(port)
 
-	// 3. Create mux and add route `/ping` -> JSON
+	// 3. Create mux + broker
+	// and setup routes
 	mux := http.NewServeMux()
+	broker := NewBroker()
+	setupRoutes(mux, broker)
+
+	// 4. Route for /ping
+	// and / (static)
 	mux.HandleFunc("GET /ping", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprintf(w, `{"status":"ok"}`)
 	})
 
-	// 4. Serve HTTP on listener
+	subDir, err := fs.Sub(staticFiles, "static")
+	if err != nil {
+		log.Fatalf("cannot find static folder: %v", err)
+	}
+	mux.Handle("GET /", http.FileServer(http.FS(subDir)))
+
+	// 5. Serve HTTP on listener
 	log.Fatal(http.Serve(listener, mux))
 }
