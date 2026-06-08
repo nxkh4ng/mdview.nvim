@@ -25,14 +25,14 @@ type ScrollEvent struct {
 
 func handleContent(broker *Broker) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// 1. Read all body from request
+		// Read all body from request
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, "cannot read body", http.StatusBadRequest)
 			return
 		}
 
-		// 2. Parse JSON into ContentRequest
+		// Parse JSON into ContentRequest
 		var req ContentRequest
 		if err = json.Unmarshal(body, &req); err != nil {
 			http.Error(w, "invalid JSON", http.StatusBadRequest)
@@ -44,23 +44,23 @@ func handleContent(broker *Broker) http.HandlerFunc {
 			return
 		}
 
-		// 3. Create event struct that send to browser
+		// Create event struct that send to browser
 		event := ContentEvent{
 			Type: "content",
 			HTML: req.Content,
 		}
 
-		// 4. Marshal this struct into JSON string
+		// Marshal this struct into JSON string
 		eventJSON, err := json.Marshal(event)
 		if err != nil {
 			http.Error(w, "cannot marshal event", http.StatusInternalServerError)
 			return
 		}
 
-		// 5. Send to all clients through broker
+		// Send to all clients through broker
 		broker.Broadcast(string(eventJSON))
 
-		// 6. Return 204
+		// Return 204
 		w.WriteHeader(http.StatusNoContent)
 	}
 }
@@ -98,31 +98,32 @@ func handleScroll(broker *Broker) http.HandlerFunc {
 
 func handleSSE(broker *Broker) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// 1. SSE required headers
+		// SSE required headers
 		w.Header().Set("Content-Type", "text/event-stream")
 		w.Header().Set("Cache-Control", "no-cache")
 		w.Header().Set("Connection", "keep-alive")
 
-		// 2. Use Flusher for push data --> browser instant
+		// Use Flusher for push data --> browser instant
 		flusher, ok := w.(http.Flusher)
 		if !ok {
 			http.Error(w, "streaming unsupported", http.StatusInternalServerError)
 			return
 		}
 
-		// 3. Add new client to broker,
+		// Add new client to broker,
 		// and done, remove it
 		client := broker.Add()
 		defer broker.Remove(client)
 
-		// 4. Loop read event from client channel,
+		// Loop read event from client channel,
 		// write to response
 		for {
 			select {
 			case event := <-client.Events:
 				// SSE receive data format
-				// data: <something>\n\n
-				fmt.Fprintf(w, "data: %s\n\n", event)
+				// `data: <something>\n\n`
+				fmt.Fprintln(w, "data:", event)
+				fmt.Fprintln(w)
 				flusher.Flush()
 			case <-r.Context().Done():
 				// Browser close tab or disconnect

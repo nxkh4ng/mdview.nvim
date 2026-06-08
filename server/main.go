@@ -13,23 +13,23 @@ import (
 var staticFiles embed.FS
 
 func main() {
-	// 1. Listen TCP on port 0
+	// Listen TCP on port 0
 	listener, err := net.Listen("tcp", ":0")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// 2. Take port from listener
+	// Take port from listener
 	port := listener.Addr().(*net.TCPAddr).Port
 	fmt.Println(port)
 
-	// 3. Create mux + broker
+	// Create mux + broker
 	// and setup routes
 	mux := http.NewServeMux()
 	broker := NewBroker()
 	setupRoutes(mux, broker)
 
-	// 4. Route for /ping
+	// Route for /ping
 	// and / (static)
 	mux.HandleFunc("GET /ping", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -42,6 +42,6 @@ func main() {
 	}
 	mux.Handle("GET /", http.FileServer(http.FS(subDir)))
 
-	// 5. Serve HTTP on listener
+	// Serve HTTP on listener
 	log.Fatal(http.Serve(listener, mux))
 }
