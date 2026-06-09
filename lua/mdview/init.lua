@@ -1,17 +1,20 @@
 local M = {}
+local server = require("mdview.server")
 
 function M.start()
-	vim.notify("mdview: starting...")
+	server.start()
 end
 function M.stop()
-	vim.notify("mdview: stopping...")
+	server.stop()
 end
 function M.refresh()
-	vim.notify("mdview: refreshing...")
+	server.refresh()
 end
 
-vim.api.nvim_create_user_command("MdviewStart", M.start, {})
-vim.api.nvim_create_user_command("MdviewStop", M.stop, {})
-vim.api.nvim_create_user_command("MdviewRefresh", M.refresh, {})
+function M.setup()
+	vim.api.nvim_create_user_command("MdviewStart", M.start, {})
+	vim.api.nvim_create_user_command("MdviewStop", M.stop, {})
+	vim.api.nvim_create_user_command("MdviewRefresh", M.refresh, {})
+end
 
 return M
