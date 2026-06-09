@@ -64,4 +64,8 @@ function M.refresh()
 	M.start()
 end
 
+function M.get_port()
+	return port
+end
+
 return M
