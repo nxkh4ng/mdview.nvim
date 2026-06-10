@@ -4,7 +4,7 @@ local server = require("mdview.server")
 function M.post(path, data)
 	local port = server.get_port()
 	if not port then
-		vim.notify("[mdview] server not return port", vim.log.levels.ERROR)
+		vim.notify("[mdview] server port not ready yet. Try again", vim.log.levels.ERROR)
 		return false
 	end
 
@@ -20,7 +20,7 @@ function M.post(path, data)
 
 	local ok, ch = pcall(vim.fn.sockconnect, "tcp", "127.0.0.1:" .. port)
 	if not ok then
-		vim.notify("[mdview] connection falied: " .. ch, vim.log.levels.ERROR)
+		vim.notify("[mdview] connection failed - " .. ch, vim.log.levels.ERROR)
 		return false
 	end
 	if ch == 0 then
