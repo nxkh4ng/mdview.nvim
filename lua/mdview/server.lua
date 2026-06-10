@@ -6,16 +6,12 @@ local binary = vim.fn.stdpath("data") .. "/mdview.nvim/mdview-server"
 
 function M.start()
 	if not vim.uv.fs_stat(binary) then
-		vim.schedule(function()
-			vim.notify("[mdview] binary not found at " .. binary, vim.log.levels.ERROR)
-		end)
+		vim.notify("[mdview] binary not found at " .. binary, vim.log.levels.ERROR)
 		return
 	end
 
 	if process and not process:is_closing() then
-		vim.schedule(function()
-			vim.notify("[mdview] server already running", vim.log.levels.WARN)
-		end)
+		vim.notify("[mdview] server already running", vim.log.levels.WARN)
 		return
 	end
 
@@ -44,9 +40,7 @@ end
 
 function M.stop()
 	if not process or process:is_closing() then
-		vim.schedule(function()
-			vim.notify("[mdview] server not running", vim.log.levels.WARN)
-		end)
+		vim.notify("[mdview] server not running", vim.log.levels.WARN)
 		return
 	end
 
@@ -54,14 +48,7 @@ function M.stop()
 	process = nil
 	port = nil
 
-	vim.schedule(function()
-		vim.notify("[mdview] server stopped", vim.log.levels.INFO)
-	end)
-end
-
-function M.refresh()
-	M.stop()
-	M.start()
+	vim.notify("[mdview] server stopped", vim.log.levels.INFO)
 end
 
 function M.get_port()
