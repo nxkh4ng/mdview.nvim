@@ -38,11 +38,6 @@ func handleContent(broker *Broker) http.HandlerFunc {
 			http.Error(w, "invalid JSON", http.StatusBadRequest)
 			return
 		}
-		// Validate content not empty
-		if req.Content == "" {
-			http.Error(w, "content is empty", http.StatusBadRequest)
-			return
-		}
 
 		// Create event struct that send to browser
 		event := ContentEvent{
