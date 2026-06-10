@@ -8,22 +8,26 @@ import (
 	"runtime"
 )
 
-func openBrowser(url string) {
+func openBrowser(url, browser string) {
 	var cmd *exec.Cmd
 
-	switch runtime.GOOS {
-	case "linux":
-		if isWSL() {
-			cmd = exec.Command(findCmdExe(), "/c", "start", url)
-		} else {
-			cmd = exec.Command("xdg-open", url)
+	if browser != "" {
+		cmd = exec.Command(browser, url)
+	} else {
+		switch runtime.GOOS {
+		case "linux":
+			if isWSL() {
+				cmd = exec.Command(findCmdExe(), "/c", "start", url)
+			} else {
+				cmd = exec.Command("xdg-open", url)
+			}
+		case "darwin":
+			cmd = exec.Command("open", url)
+		case "windows":
+			cmd = exec.Command("cmd.exe", "/c", "start", url)
+		default:
+			return
 		}
-	case "darwin":
-		cmd = exec.Command("open", url)
-	case "windows":
-		cmd = exec.Command("cmd.exe", "/c", "start", url)
-	default:
-		return
 	}
 
 	if err := cmd.Start(); err != nil {

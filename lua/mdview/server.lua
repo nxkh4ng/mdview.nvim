@@ -4,7 +4,7 @@ local process = nil
 local port = nil
 local binary = vim.fn.stdpath("data") .. "/mdview.nvim/mdview-server"
 
-function M.start()
+function M.start(cfg_host, cfg_port, cfg_browser)
 	if not vim.uv.fs_stat(binary) then
 		vim.notify("[mdview] binary not found at " .. binary, vim.log.levels.ERROR)
 		return
@@ -15,7 +15,21 @@ function M.start()
 		return
 	end
 
-	process = vim.system({ binary }, {
+	local args = { binary }
+	table.insert(args, "-host")
+	table.insert(args, cfg_host)
+
+	if cfg_port ~= 0 then
+		table.insert(args, "-port")
+		table.insert(args, tostring(cfg_port))
+	end
+
+	if cfg_browser ~= "" then
+		table.insert(args, "-browser")
+		table.insert(args, cfg_browser)
+	end
+
+	process = vim.system(args, {
 		text = true,
 		detach = true,
 		stdout = function(_, data)

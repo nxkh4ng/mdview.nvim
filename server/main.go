@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"flag"
 	"fmt"
 	"io/fs"
 	"log"
@@ -13,19 +14,25 @@ import (
 var staticFiles embed.FS
 
 func main() {
-	// Listen TCP on port 0
-	listener, err := net.Listen("tcp", ":0")
+	host := flag.String("host", "127.0.0.1", "listen host")
+	port := flag.Int("port", 0, "listen port (0 = random)")
+	browser := flag.String("browser", "", "browser command")
+	flag.Parse()
+
+	addr := fmt.Sprintf("%s:%d", *host, *port)
+	listener, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Take port from listener
-	port := listener.Addr().(*net.TCPAddr).Port
-	fmt.Println(port)
+	if *port == 0 {
+		*port = listener.Addr().(*net.TCPAddr).Port
+	}
+	fmt.Println(*port)
 
 	// Open browser
-	url := fmt.Sprintf("http://localhost:%d", port)
-	openBrowser(url)
+	url := fmt.Sprintf("http://%s:%d", *host, *port)
+	openBrowser(url, *browser)
 
 	// Create mux + broker
 	// and setup routes
