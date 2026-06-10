@@ -23,6 +23,10 @@ func main() {
 	port := listener.Addr().(*net.TCPAddr).Port
 	fmt.Println(port)
 
+	// Open browser
+	url := fmt.Sprintf("http://localhost:%d", port)
+	openBrowser(url)
+
 	// Create mux + broker
 	// and setup routes
 	mux := http.NewServeMux()
