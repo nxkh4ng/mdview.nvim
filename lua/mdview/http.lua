@@ -1,5 +1,6 @@
 local M = {}
 local server = require("mdview.server")
+local config = require("mdview.config")
 
 function M.post(path, data)
 	local port = server.get_port()
@@ -8,17 +9,20 @@ function M.post(path, data)
 		return false
 	end
 
+	local cfg = config.get()
+	local addr = cfg.host .. ":" .. port
+
 	local body = vim.fn.json_encode(data)
 	local request = table.concat({
 		"POST " .. path .. " HTTP/1.1",
-		"Host: 127.0.0.1:" .. port,
+		"Host: " .. cfg.host .. ":" .. port,
 		"Content-Type: application/json",
 		"Content-Length: " .. #body,
 		"",
 		body,
 	}, "\r\n")
 
-	local ok, ch = pcall(vim.fn.sockconnect, "tcp", "127.0.0.1:" .. port)
+	local ok, ch = pcall(vim.fn.sockconnect, "tcp", addr)
 	if not ok then
 		vim.notify("[mdview] connection failed - " .. ch, vim.log.levels.ERROR)
 		return false

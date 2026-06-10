@@ -1,12 +1,7 @@
 local M = {}
 local server = require("mdview.server")
 local autocmds = require("mdview.autocmds")
-
-local config = {
-	host = "127.0.0.1",
-	port = 0,
-	browser = "",
-}
+local config = require("mdview.config")
 
 function M.start()
 	if vim.bo.filetype ~= "markdown" then
@@ -14,7 +9,7 @@ function M.start()
 		return
 	end
 
-	server.start(config.host, config.port, config.browser)
+	server.start(config.get())
 	autocmds.enable()
 end
 
@@ -24,9 +19,7 @@ function M.stop()
 end
 
 function M.setup(opts)
-	if opts then
-		config = vim.tbl_deep_extend("force", config, opts)
-	end
+	config.setup(opts)
 
 	vim.api.nvim_create_user_command("MdviewStart", M.start, {})
 	vim.api.nvim_create_user_command("MdviewStop", M.stop, {})
