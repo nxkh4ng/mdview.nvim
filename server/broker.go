@@ -15,6 +15,9 @@ func NewClient() *Client {
 type Broker struct {
 	mu      sync.Mutex
 	clients map[*Client]struct{}
+
+	latestContent string
+	latestScroll  string
 }
 
 func NewBroker() *Broker {
@@ -54,4 +57,32 @@ func (b *Broker) Broadcast(event string) {
 			// client slow, skip (not block)
 		}
 	}
+}
+
+func (b *Broker) SetLatestContent(event string) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	b.latestContent = event
+}
+
+func (b *Broker) GetLatestContent() string {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	return b.latestContent
+}
+
+func (b *Broker) SetLatestScroll(event string) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	b.latestScroll = event
+}
+
+func (b *Broker) GetLatestScroll() string {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	return b.latestScroll
 }

@@ -57,6 +57,8 @@ func handleContent(broker *Broker) http.HandlerFunc {
 			return
 		}
 
+		broker.SetLatestContent(string(eventJSON))
+
 		// Send to all clients through broker
 		broker.Broadcast(string(eventJSON))
 
@@ -90,6 +92,8 @@ func handleScroll(broker *Broker) http.HandlerFunc {
 			return
 		}
 
+		broker.SetLatestScroll(string(eventJSON))
+
 		broker.Broadcast(string(eventJSON))
 
 		w.WriteHeader(http.StatusNoContent)
@@ -115,13 +119,21 @@ func handleSSE(broker *Broker) http.HandlerFunc {
 		client := broker.Add()
 		defer broker.Remove(client)
 
+		if c := broker.GetLatestContent(); c != "" {
+			fmt.Fprintln(w, "data:", c)
+			fmt.Fprintln(w)
+		}
+		if s := broker.GetLatestScroll(); s != "" {
+			fmt.Fprintln(w, "data:", s)
+			fmt.Fprintln(w)
+		}
+		flusher.Flush()
+
 		// Loop read event from client channel,
 		// write to response
 		for {
 			select {
 			case event := <-client.Events:
-				// SSE receive data format
-				// `data: <something>\n\n`
 				fmt.Fprintln(w, "data:", event)
 				fmt.Fprintln(w)
 				flusher.Flush()
