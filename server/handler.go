@@ -39,7 +39,7 @@ func handleContent(broker *Broker) http.HandlerFunc {
 			return
 		}
 
-		html, err := markdownToHTML([]byte(req.Content))
+		htmlData, err := markdownToHTML([]byte(req.Content))
 		if err != nil {
 			http.Error(w, "cannot render markdown", http.StatusInternalServerError)
 			return
@@ -48,7 +48,7 @@ func handleContent(broker *Broker) http.HandlerFunc {
 		// Create event struct that send to browser
 		event := ContentEvent{
 			Type: "content",
-			HTML: string(html),
+			HTML: string(htmlData),
 		}
 
 		// Marshal this struct into JSON string
@@ -143,5 +143,13 @@ func handleSSE(broker *Broker) http.HandlerFunc {
 				return
 			}
 		}
+	}
+}
+
+func handleChromaCSS() http.HandlerFunc {
+	css := chromaCSS()
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/css; charset=utf-8")
+		w.Write([]byte(css))
 	}
 }

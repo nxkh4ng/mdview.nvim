@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 
+	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
 	"github.com/yuin/goldmark"
 	highlighting "github.com/yuin/goldmark-highlighting/v2"
 	"github.com/yuin/goldmark/extension"
@@ -15,7 +16,10 @@ var md = goldmark.New(
 		extension.Linkify,
 		extension.TaskList,
 		highlighting.NewHighlighting(
-			highlighting.WithStyle("monokai"),
+			// highlighting.WithStyle("github"),
+			highlighting.WithFormatOptions(
+				chromahtml.WithClasses(true),
+			),
 		),
 	),
 )
