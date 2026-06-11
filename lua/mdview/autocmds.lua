@@ -53,7 +53,6 @@ function M.enable()
 
 	vim.api.nvim_create_autocmd("VimLeavePre", {
 		group = group,
-		pattern = "*.md",
 		callback = function()
 			M.disable()
 			server.stop()
