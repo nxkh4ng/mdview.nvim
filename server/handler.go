@@ -39,10 +39,16 @@ func handleContent(broker *Broker) http.HandlerFunc {
 			return
 		}
 
+		html, err := markdownToHTML([]byte(req.Content))
+		if err != nil {
+			http.Error(w, "cannot render markdown", http.StatusInternalServerError)
+			return
+		}
+
 		// Create event struct that send to browser
 		event := ContentEvent{
 			Type: "content",
-			HTML: req.Content,
+			HTML: string(html),
 		}
 
 		// Marshal this struct into JSON string
