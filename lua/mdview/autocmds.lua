@@ -55,8 +55,8 @@ function M.enable()
 		group = group,
 		pattern = "*.md",
 		callback = function()
-			server.stop()
 			M.disable()
+			server.stop()
 		end,
 	})
 end
