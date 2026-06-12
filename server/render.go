@@ -15,6 +15,8 @@ var md = goldmark.New(
 		extension.Strikethrough,
 		extension.Linkify,
 		extension.TaskList,
+		extension.DefinitionList,
+		extension.Footnote,
 		highlighting.NewHighlighting(
 			// highlighting.WithStyle("github"),
 			highlighting.WithFormatOptions(
