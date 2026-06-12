@@ -148,6 +148,7 @@ body {
 
 /* Blockquote */
 #preview blockquote {
+  margin-left: 0;
   padding: 0 1em;
   color: var(--fg-muted);
   border-left: 0.25em solid var(--border-default);
@@ -202,6 +203,7 @@ body {
   border-radius: 6px;
   background: var(--bg-muted);
   color: var(--fg-default);
+  tab-size: 4;
 }
 #preview pre code {
   padding: 0;

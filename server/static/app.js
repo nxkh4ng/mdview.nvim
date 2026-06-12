@@ -4,10 +4,12 @@ eventSource.onmessage = (event) => {
   const data = JSON.parse(event.data);
 
   if (data.type === "content") {
+    console.log("HTML: ", data.html);
     preview.innerHTML = data.html;
   }
 
   if (data.type === "scroll") {
+    console.log("Cursor line: ", data.cursor_line);
     scrollToLine(data.cursor_line);
   }
 };

@@ -54,8 +54,8 @@ function M.enable()
 	vim.api.nvim_create_autocmd("VimLeavePre", {
 		group = group,
 		callback = function()
-			M.disable()
 			server.stop()
+			M.disable()
 		end,
 	})
 end
