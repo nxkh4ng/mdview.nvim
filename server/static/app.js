@@ -19,7 +19,7 @@ function scrollToLine(line) {
   if (element) {
     element.scrollIntoView({
       behavior: "instant",
-      block: "center",
+      block: "start",
     });
   }
 }

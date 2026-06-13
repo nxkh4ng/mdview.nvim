@@ -45,7 +45,7 @@ func isWSL() bool {
 }
 
 func findCmdExe() string {
-	// WSL defaut use windowsPATH
+	// WSL default uses Windows PATH
 	if path, err := exec.LookPath("cmd.exe"); err == nil {
 		return path
 	}

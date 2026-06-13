@@ -3,8 +3,10 @@ local http = require("mdview.http")
 local server = require("mdview.server")
 
 local debounce_timer = assert(vim.uv.new_timer(), "[mdview] failed to create debounce timer")
+local prev_line = nil
 
 local function send_content()
+	prev_line = nil
 	debounce_timer:start(
 		100,
 		0,
@@ -19,6 +21,10 @@ end
 
 local function send_scroll()
 	local cursor_line = vim.api.nvim_win_get_cursor(0)[1]
+	if cursor_line == prev_line then
+		return
+	end
+	prev_line = cursor_line
 	http.post("/scroll", { cursor_line = cursor_line })
 end
 
