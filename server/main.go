@@ -26,7 +26,11 @@ func main() {
 	}
 
 	if *port == 0 {
-		*port = listener.Addr().(*net.TCPAddr).Port
+		tcpAddr, ok := listener.Addr().(*net.TCPAddr)
+		if !ok {
+			log.Fatal("unexpected address type")
+		}
+		*port = tcpAddr.Port
 	}
 	fmt.Println(*port)
 

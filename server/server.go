@@ -7,4 +7,5 @@ func setupRoutes(mux *http.ServeMux, broker *Broker) {
 	mux.HandleFunc("POST /content", handleContent(broker))
 	mux.HandleFunc("POST /scroll", handleScroll(broker))
 	mux.HandleFunc("GET /chroma.css", handleChromaCSS())
+	mux.HandleFunc("GET /local/", handleLocalFiles())
 }

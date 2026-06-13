@@ -5,10 +5,13 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"path/filepath"
+	"strings"
 )
 
 type ContentRequest struct {
 	Content string `json:"content"`
+	BaseDir string `json:"base_dir"`
 }
 type ContentEvent struct {
 	Type string `json:"type"`
@@ -39,7 +42,7 @@ func handleContent(broker *Broker) http.HandlerFunc {
 			return
 		}
 
-		htmlData, err := markdownToHTML([]byte(req.Content))
+		htmlData, err := markdownToHTML([]byte(req.Content), req.BaseDir)
 		if err != nil {
 			http.Error(w, "cannot render markdown", http.StatusInternalServerError)
 			return
@@ -151,5 +154,21 @@ func handleChromaCSS() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/css; charset=utf-8")
 		w.Write([]byte(css))
+	}
+}
+
+func handleLocalFiles() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		filePath, ok := strings.CutPrefix(r.URL.Path, "/local/")
+		if !ok {
+			http.NotFound(w, r)
+			return
+		}
+		if !strings.HasPrefix(filePath, "/") {
+			filePath = "/" + filePath
+		}
+		filePath = filepath.Clean(filePath)
+
+		http.ServeFile(w, r, filePath)
 	}
 }

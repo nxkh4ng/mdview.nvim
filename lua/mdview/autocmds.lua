@@ -14,7 +14,12 @@ local function send_content()
 			local bufnr = vim.api.nvim_get_current_buf()
 			local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
 			local content = table.concat(lines, "\n")
-			http.post("/content", { content = content })
+			local path = vim.api.nvim_buf_get_name(bufnr)
+			local base_dir = vim.fn.fnamemodify(path, ":h")
+			http.post("/content", {
+				content = content,
+				base_dir = base_dir,
+			})
 		end)
 	)
 end

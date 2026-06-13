@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"sync"
 
 	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
 	"github.com/yuin/goldmark"
@@ -13,35 +14,71 @@ import (
 
 type noPreWrapper struct{}
 
-var md = goldmark.New(
-	goldmark.WithExtensions(
-		extension.Table,
-		extension.Strikethrough,
-		extension.Linkify,
-		extension.TaskList,
-		extension.DefinitionList,
+var baseMd = sync.OnceValue(func() goldmark.Markdown {
+	return goldmark.New(
+		goldmark.WithExtensions(
+			extension.Table,
+			extension.Strikethrough,
+			extension.Linkify,
+			extension.TaskList,
+			extension.DefinitionList,
 
-		// Syntax highlighting
-		highlighting.NewHighlighting(
-			highlighting.WithStyle("github"),
-			highlighting.WithFormatOptions(
-				chromahtml.WithClasses(true),
-				chromahtml.WithPreWrapper(noPreWrapper{}),
+			// Syntax highlighting
+			highlighting.NewHighlighting(
+				highlighting.WithStyle("github"),
+				highlighting.WithFormatOptions(
+					chromahtml.WithClasses(true),
+					chromahtml.WithPreWrapper(noPreWrapper{}),
+				),
+				highlighting.WithWrapperRenderer(codeBlockWrapper),
 			),
-			highlighting.WithWrapperRenderer(codeBlockWrapper),
 		),
-	),
 
-	// Inject `data-source-line` into DOM
-	goldmark.WithParserOptions(
-		parser.WithASTTransformers(
-			util.Prioritized(&LineInjector{}, 100),
+		// Inject `data-source-line` into DOM
+		goldmark.WithParserOptions(
+			parser.WithASTTransformers(
+				util.Prioritized(&LineInjector{}, 100),
+			),
 		),
-	),
-)
+	)
+})
 
-func markdownToHTML(source []byte) ([]byte, error) {
+func markdownToHTML(source []byte, baseDir string) ([]byte, error) {
 	var buf bytes.Buffer
+
+	var md goldmark.Markdown
+	if baseDir == "" {
+		md = baseMd()
+	} else {
+		md = goldmark.New(
+			goldmark.WithExtensions(
+				extension.Table,
+				extension.Strikethrough,
+				extension.Linkify,
+				extension.TaskList,
+				extension.DefinitionList,
+
+				// Syntax highlighting
+				highlighting.NewHighlighting(
+					highlighting.WithStyle("github"),
+					highlighting.WithFormatOptions(
+						chromahtml.WithClasses(true),
+						chromahtml.WithPreWrapper(noPreWrapper{}),
+					),
+					highlighting.WithWrapperRenderer(codeBlockWrapper),
+				),
+			),
+
+			// Inject `data-source-line` into DOM
+			goldmark.WithParserOptions(
+				parser.WithASTTransformers(
+					util.Prioritized(&LineInjector{}, 100),
+					util.Prioritized(&AssetRewriter{BaseDir: baseDir}, 50),
+				),
+			),
+		)
+	}
+
 	err := md.Convert(source, &buf)
 	if err != nil {
 		return nil, err
