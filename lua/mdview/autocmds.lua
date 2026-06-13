@@ -57,6 +57,15 @@ function M.enable()
 		callback = send_scroll,
 	})
 
+	vim.api.nvim_create_autocmd("BufEnter", {
+		group = group,
+		pattern = "*.md",
+		callback = function()
+			send_content()
+			send_scroll()
+		end,
+	})
+
 	vim.api.nvim_create_autocmd("VimLeavePre", {
 		group = group,
 		callback = function()

@@ -2,7 +2,7 @@ local M = {}
 
 local process = nil
 local port = nil
-local binary = vim.fn.stdpath("data") .. "/mdview.nvim/mdview-server"
+local binary = require("mdview.install").binary_path
 
 function M.start(cfg)
 	if not vim.uv.fs_stat(binary) then
@@ -58,7 +58,11 @@ function M.stop()
 		return
 	end
 
-	process:kill("sigterm")
+	if vim.fn.has("win32") == 1 then
+		process:kill("sigint")
+	else
+		process:kill("sigterm")
+	end
 	process = nil
 	port = nil
 
