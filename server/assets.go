@@ -17,6 +17,7 @@ func (r *AssetRewriter) Transform(doc *ast.Document, reader text.Reader, pc pars
 	if r.BaseDir == "" {
 		return
 	}
+	r.BaseDir = strings.ReplaceAll(r.BaseDir, "\\", "/")
 
 	ast.Walk(doc, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
 		if !entering {

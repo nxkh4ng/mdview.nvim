@@ -16,6 +16,7 @@ local function send_content()
 			local content = table.concat(lines, "\n")
 			local path = vim.api.nvim_buf_get_name(bufnr)
 			local base_dir = vim.fn.fnamemodify(path, ":h")
+			base_dir = base_dir:gsub("\\", "/")
 			http.post("/content", {
 				content = content,
 				base_dir = base_dir,
