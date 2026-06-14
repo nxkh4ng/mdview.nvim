@@ -30,14 +30,14 @@ func (r *AssetRewriter) Transform(doc *ast.Document, reader text.Reader, pc pars
 			dest := string(img.Destination)
 
 			if needsRewrite(dest) {
-				img.Destination = []byte("/local" + path.Join(r.BaseDir, dest))
+				img.Destination = []byte("/local" + path.Join("/", r.BaseDir, dest))
 			}
 		case ast.KindLink:
 			link := n.(*ast.Link)
 			dest := string(link.Destination)
 
 			if needsRewrite(dest) {
-				link.Destination = []byte("/local" + path.Join(r.BaseDir, dest))
+				link.Destination = []byte("/local" + path.Join("/", r.BaseDir, dest))
 			}
 		}
 

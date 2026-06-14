@@ -174,10 +174,12 @@ func handleLocalFiles() http.HandlerFunc {
 			http.NotFound(w, r)
 			return
 		}
-		if !strings.HasPrefix(filePath, "/") {
-			filePath = "/" + filePath
+		filePath = filepath.FromSlash(filePath)
+
+		if !filepath.IsAbs(filePath) {
+			filePath = filepath.Join("/", filePath)
+			filePath = filepath.Clean(filePath)
 		}
-		filePath = filepath.Clean(filePath)
 
 		baseDirMu.RLock()
 		baseDir := currentBaseDir
