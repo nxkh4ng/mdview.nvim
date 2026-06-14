@@ -33,6 +33,7 @@ function M.post(path, data)
 	end
 
 	vim.fn.chansend(ch, request)
+	vim.fn.chanclose(ch)
 	return true
 end
 
