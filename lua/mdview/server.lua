@@ -2,7 +2,7 @@ local M = {}
 
 local process = nil
 local port = nil
-local binary = require("mdview.install").binary_path
+local binary = require("mdview.util").binary_path
 
 function M.start(cfg)
 	if not vim.uv.fs_stat(binary) then

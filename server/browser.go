@@ -17,14 +17,14 @@ func openBrowser(url, browser string) {
 		switch runtime.GOOS {
 		case "linux":
 			if isWSL() {
-				cmd = exec.Command(findCmdExe(), "/c", "start", url)
+				cmd = exec.Command(findRundll32(), "url.dll,FileProtocolHandler", url)
 			} else {
 				cmd = exec.Command("xdg-open", url)
 			}
 		case "darwin":
 			cmd = exec.Command("open", url)
 		case "windows":
-			cmd = exec.Command("cmd.exe", "/c", "start", url)
+			cmd = exec.Command("rundll32.exe", "url.dll,FileProtocolHandler", url)
 		default:
 			return
 		}
@@ -44,12 +44,12 @@ func isWSL() bool {
 		bytes.Contains(data, []byte("WSL"))
 }
 
-func findCmdExe() string {
+func findRundll32() string {
 	// WSL default uses Windows PATH
-	if path, err := exec.LookPath("cmd.exe"); err == nil {
+	if path, err := exec.LookPath("rundll32.exe"); err == nil {
 		return path
 	}
 
 	// Fallback
-	return "/mnt/c/Windows/System32/cmd.exe"
+	return "/mnt/c/Windows/System32/rundll32.exe"
 }

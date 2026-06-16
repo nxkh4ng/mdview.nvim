@@ -48,41 +48,39 @@ local BINARY_NAME = "mdview" .. suffix
 local BINARY_PATH = INSTALL_DIR .. sep .. BINARY_NAME
 M.binary_path = BINARY_PATH
 
-vim.fn.mkdir(INSTALL_DIR, "p")
+function M.install()
+	vim.fn.mkdir(INSTALL_DIR, "p")
 
-if vim.uv.fs_stat(BINARY_PATH) then
-	return M
-end
+	local url =
+		string.format("https://github.com/%s/%s/releases/latest/download/%s", GITHUB_OWNER, GITHUB_REPO, BINARY_NAME)
 
-local url =
-	string.format("https://github.com/%s/%s/releases/latest/download/%s", GITHUB_OWNER, GITHUB_REPO, BINARY_NAME)
+	local ok
+	if vim.fn.executable("curl") == 1 then
+		vim.fn.system({ "curl", "-fL", "-o", BINARY_PATH, url })
+		ok = vim.v.shell_error == 0
+	elseif vim.fn.executable("wget") == 1 then
+		vim.fn.system({ "wget", "-O", BINARY_PATH, url })
+		ok = vim.v.shell_error == 0
+	else
+		vim.notify("[mdview] curl or wget required to download binary", vim.log.levels.ERROR)
+		return M
+	end
 
-local ok
-if vim.fn.executable("curl") == 1 then
-	vim.fn.system({ "curl", "-fL", "-o", BINARY_PATH, url })
-	ok = vim.v.shell_error == 0
-elseif vim.fn.executable("wget") == 1 then
-	vim.fn.system({ "wget", "-O", BINARY_PATH, url })
-	ok = vim.v.shell_error == 0
-else
-	vim.notify("[mdview] curl or wget required to download binary", vim.log.levels.ERROR)
-	return M
-end
+	if not ok then
+		vim.notify("[mdview] Download failed: " .. url, vim.log.levels.ERROR)
+		return M
+	end
 
-if not ok then
-	vim.notify("[mdview] Download failed: " .. url, vim.log.levels.ERROR)
-	return M
-end
+	if vim.fn.has("win32") ~= 1 then
+		vim.fn.system({ "chmod", "+x", BINARY_PATH })
+	end
 
-if vim.fn.has("win32") ~= 1 then
-	vim.fn.system({ "chmod", "+x", BINARY_PATH })
-end
-
-local final_stat = vim.uv.fs_stat(BINARY_PATH)
-if final_stat and final_stat.size > 0 then
-	vim.notify("[mdview] Downloaded: " .. BINARY_NAME .. " - size: " .. final_stat.size, vim.log.levels.INFO)
-else
-	vim.notify("[mdview] Downloaded binary is invalid", vim.log.levels.ERROR)
+	local final_stat = vim.uv.fs_stat(BINARY_PATH)
+	if final_stat and final_stat.size > 0 then
+		vim.notify("[mdview] Downloaded: " .. BINARY_NAME .. " - size: " .. final_stat.size, vim.log.levels.INFO)
+	else
+		vim.notify("[mdview] Downloaded binary is invalid", vim.log.levels.ERROR)
+	end
 end
 
 return M

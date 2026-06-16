@@ -43,7 +43,7 @@
     "nxkh4ng/mdview.nvim",
     cmd = { "MdviewStart", "MdviewStop" },
     build = function()
-        require("mdview.install")
+        require("mdview.util").install()
     end,
     opts = {},
 }
