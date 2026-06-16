@@ -32,7 +32,7 @@ func main() {
 		}
 		*port = tcpAddr.Port
 	}
-	fmt.Println(*port)
+	fmt.Printf("PORT:%d\n", *port)
 
 	// Open browser
 	url := fmt.Sprintf("http://%s:%d", *host, *port)

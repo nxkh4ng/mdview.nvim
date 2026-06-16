@@ -34,7 +34,7 @@ function M.start(cfg)
 		detach = true,
 		stdout = function(_, data)
 			if data and data ~= "" then
-				port = tonumber(data:match("%d+"))
+				port = tonumber(data:match("PORT:(%d+)"))
 				if port then
 					vim.schedule(function()
 						vim.notify("[mdview] port=" .. port, vim.log.levels.INFO)
