@@ -160,10 +160,9 @@ func handleSSE(broker *Broker) http.HandlerFunc {
 }
 
 func handleChromaCSS() http.HandlerFunc {
-	css := chromaCSS()
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/css; charset=utf-8")
-		w.Write([]byte(css))
+		w.Write([]byte(chromaCSS()))
 	}
 }
 
