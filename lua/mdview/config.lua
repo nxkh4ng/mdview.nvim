@@ -4,7 +4,7 @@ local defaults = {
 	host = "127.0.0.1",
 	port = 0,
 	browser = "",
-	deboucne_time = 50,
+	debounce_time = 50,
 }
 
 function M.setup(opts)

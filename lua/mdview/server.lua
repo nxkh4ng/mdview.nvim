@@ -55,18 +55,19 @@ end
 function M.stop()
 	if not process or process:is_closing() then
 		vim.notify("[mdview] server not running", vim.log.levels.WARN)
-		return
-	end
-
-	if vim.fn.has("win32") == 1 then
-		process:kill("sigint")
 	else
-		process:kill("sigterm")
-	end
-	process = nil
-	port = nil
+		if vim.fn.has("win32") == 1 then
+			process:kill("sigint")
+		else
+			process:kill("sigterm")
+		end
 
-	vim.notify("[mdview] server stopped", vim.log.levels.INFO)
+		process = nil
+		port = nil
+		vim.notify("[mdview] server stopped", vim.log.levels.INFO)
+	end
+
+	require("mdview.http").close()
 end
 
 function M.get_port()

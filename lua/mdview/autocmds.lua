@@ -9,7 +9,7 @@ local prev_line = nil
 local function send_content()
 	prev_line = nil
 	debounce_timer:start(
-		config.get().deboucne_time,
+		config.get().debounce_time,
 		0,
 		vim.schedule_wrap(function()
 			local bufnr = vim.api.nvim_get_current_buf()
