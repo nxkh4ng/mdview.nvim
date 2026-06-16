@@ -71,12 +71,17 @@ require("mdview").setup({
     -- address the Go server binds to
     host = "127.0.0.1",
 
-    -- port number, 0 = random available port
+    -- port number
+    -- 0 = random available port
     port = 0,
 
     -- browser command, empty = system default
     -- examples: "firefox", "chromium", "brave-browser",...
     browser = "",
+
+    -- ms to wait after typing before updating preview
+    -- lower = more responsive, higher = less overhead
+    debounce_time = 50,
 })
 ```
 

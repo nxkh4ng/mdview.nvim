@@ -1,6 +1,7 @@
 local M = {}
 local http = require("mdview.http")
 local server = require("mdview.server")
+local config = require("mdview.config")
 
 local debounce_timer = assert(vim.uv.new_timer(), "[mdview] failed to create debounce timer")
 local prev_line = nil
@@ -8,7 +9,7 @@ local prev_line = nil
 local function send_content()
 	prev_line = nil
 	debounce_timer:start(
-		100,
+		config.get().deboucne_time,
 		0,
 		vim.schedule_wrap(function()
 			local bufnr = vim.api.nvim_get_current_buf()
