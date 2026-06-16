@@ -3,7 +3,7 @@ name: release
 on:
   push:
     tags:
-    - 'v*'
+      - "v*"
 
 permissions:
   contents: write
@@ -12,11 +12,23 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+          cache: true
+          cache-dependency-path: server/go.sum
+      - run: go test -C server ./...
+
   build:
+    needs: test
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [linux, darwin, windows]
+        target_os: [linux, darwin, windows]
         arch: [amd64, arm64]
 
     steps:
@@ -24,25 +36,37 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: stable
+          go-version-file: server/go.mod
           cache: true
           cache-dependency-path: server/go.sum
 
       - name: Build
         run: |
-          suffix="-${{ matrix.os }}-${{ matrix.arch }}"
-          if [ "${{ matrix.os }}" = "windows" ]; then
+          suffix="-${{ matrix.target_os }}-${{ matrix.arch }}"
+          if [ "${{ matrix.target_os }}" = "windows" ]; then
             suffix="$suffix.exe"
           fi
-          CGO_ENABLED=0 GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} \
+          CGO_ENABLED=0 GOOS=${{ matrix.target_os }} GOARCH=${{ matrix.arch }} \
             go build -C server -trimpath -ldflags="-s -w" \
             -o "mdview$suffix" ./...
 
-      - name: Upload
-        uses: svenstaro/upload-release-action@v2
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: server/mdview*
-          tag: ${{ github.ref }}
-          overwrite: true
-          file_glob: true
+          name: mdview-${{ matrix.target_os }}-${{ matrix.arch }}
+          path: server/mdview*
+          if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*/*
+          generate_release_notes: true
+          name: ${{ github.ref_name }}
