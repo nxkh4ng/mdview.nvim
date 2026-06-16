@@ -42,48 +42,59 @@ var baseMd = sync.OnceValue(func() goldmark.Markdown {
 		),
 	)
 })
+var mdCache sync.Map
 
 func markdownToHTML(source []byte, baseDir string) ([]byte, error) {
 	var buf bytes.Buffer
 
-	var md goldmark.Markdown
-	if baseDir == "" {
-		md = baseMd()
-	} else {
-		md = goldmark.New(
-			goldmark.WithExtensions(
-				extension.Table,
-				extension.Strikethrough,
-				extension.Linkify,
-				extension.TaskList,
-				extension.DefinitionList,
-
-				// Syntax highlighting
-				highlighting.NewHighlighting(
-					highlighting.WithStyle("github"),
-					highlighting.WithFormatOptions(
-						chromahtml.WithClasses(true),
-						chromahtml.WithPreWrapper(noPreWrapper{}),
-					),
-					highlighting.WithWrapperRenderer(codeBlockWrapper),
-				),
-			),
-
-			// Inject `data-source-line` into DOM
-			goldmark.WithParserOptions(
-				parser.WithASTTransformers(
-					util.Prioritized(&LineInjector{}, 100),
-					util.Prioritized(&AssetRewriter{BaseDir: baseDir}, 50),
-				),
-			),
-		)
-	}
+	md := getMarkdown(baseDir)
 
 	err := md.Convert(source, &buf)
 	if err != nil {
 		return nil, err
 	}
 	return buf.Bytes(), nil
+}
+
+func getMarkdown(baseDir string) goldmark.Markdown {
+	if baseDir == "" {
+		return baseMd()
+	}
+
+	if cached, ok := mdCache.Load(baseDir); ok {
+		return cached.(goldmark.Markdown)
+	}
+
+	md := goldmark.New(
+		goldmark.WithExtensions(
+			extension.Table,
+			extension.Strikethrough,
+			extension.Linkify,
+			extension.TaskList,
+			extension.DefinitionList,
+
+			// Syntax highlighting
+			highlighting.NewHighlighting(
+				highlighting.WithStyle("github"),
+				highlighting.WithFormatOptions(
+					chromahtml.WithClasses(true),
+					chromahtml.WithPreWrapper(noPreWrapper{}),
+				),
+				highlighting.WithWrapperRenderer(codeBlockWrapper),
+			),
+		),
+
+		// Inject `data-source-line` into DOM
+		goldmark.WithParserOptions(
+			parser.WithASTTransformers(
+				util.Prioritized(&LineInjector{}, 100),
+				util.Prioritized(&AssetRewriter{BaseDir: baseDir}, 50),
+			),
+		),
+	)
+
+	mdCache.Store(baseDir, md)
+	return md
 }
 
 func (noPreWrapper) Start(code bool, styleAttr string) string {
