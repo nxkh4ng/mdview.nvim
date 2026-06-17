@@ -6,7 +6,10 @@ local binary = require("mdview.utils").binary_path
 
 function M.start(cfg)
 	if not vim.uv.fs_stat(binary) then
-		vim.notify("[mdview] binary not found at: " .. binary, vim.log.levels.ERROR)
+		vim.notify(
+			"[mdview] binary not found at: " .. binary,
+			vim.log.levels.ERROR
+		)
 		return
 	end
 
@@ -37,7 +40,10 @@ function M.start(cfg)
 				port = tonumber(data:match("PORT:(%d+)"))
 				if port then
 					vim.schedule(function()
-						vim.notify("[mdview] port=" .. port, vim.log.levels.INFO)
+						vim.notify(
+							"[mdview] port=" .. port,
+							vim.log.levels.INFO
+						)
 					end)
 				end
 			end
@@ -72,6 +78,41 @@ end
 
 function M.get_port()
 	return port
+end
+
+function M.wait_for_ready(timeout_ms, callback)
+	if port then
+		callback()
+		return
+	end
+
+	local elapsed = 0
+	local timer = vim.uv.new_timer()
+	if not timer then
+		vim.notify("[mdview] cannot create timer", vim.log.levels.ERROR)
+		return
+	end
+
+	timer:start(
+		0,
+		30,
+		vim.schedule_wrap(function()
+			elapsed = elapsed + 30
+
+			if port then
+				timer:stop()
+				timer:close()
+				callback()
+			elseif elapsed >= timeout_ms then
+				timer:stop()
+				timer:close()
+				vim.notify(
+					"[mdview] server start timeout",
+					vim.log.levels.ERROR
+				)
+			end
+		end)
+	)
 end
 
 return M

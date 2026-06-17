@@ -1,9 +1,10 @@
 local M = {}
+local config = require("mdview.config")
 local http = require("mdview.http")
 local server = require("mdview.server")
-local config = require("mdview.config")
 
-local debounce_timer = assert(vim.uv.new_timer(), "[mdview] failed to create debounce timer")
+local debounce_timer =
+	assert(vim.uv.new_timer(), "[mdview] failed to create debounce timer")
 local prev_line = nil
 local prev_content = nil
 
@@ -51,18 +52,8 @@ local function send_scroll()
 	http.post("/scroll", { cursor_line = cursor_line })
 end
 
-local function wait_for_port(callback)
-	if server.get_port() then
-		callback()
-	else
-		vim.defer_fn(function()
-			wait_for_port(callback)
-		end, 30)
-	end
-end
-
 function M.enable()
-	wait_for_port(function()
+	server.wait_for_ready(3000, function()
 		send_content()
 		send_scroll()
 	end)
