@@ -28,7 +28,8 @@ local function detect_platform()
 	elseif os_name == "Darwin" then
 		return (arch == "amd64") and "-darwin-amd64" or "-darwin-arm64"
 	elseif os_name == "Windows_NT" then
-		return (arch == "amd64") and "-windows-amd64.exe" or "-windows-arm64.exe"
+		return (arch == "amd64") and "-windows-amd64.exe"
+			or "-windows-arm64.exe"
 	end
 
 	return nil
@@ -39,7 +40,8 @@ if not suffix then
 	local os_name = vim.uv.os_uname().sysname
 	local arch = vim.uv.os_uname().machine
 
-	local err_msg = string.format("[mdview] unsupported platform: %s/%s", os_name, arch)
+	local err_msg =
+		string.format("[mdview] unsupported platform: %s/%s", os_name, arch)
 	vim.notify(err_msg, vim.log.levels.ERROR)
 	return M
 end
@@ -51,8 +53,12 @@ M.binary_path = BINARY_PATH
 function M.install()
 	vim.fn.mkdir(INSTALL_DIR, "p")
 
-	local url =
-		string.format("https://github.com/%s/%s/releases/latest/download/%s", GITHUB_OWNER, GITHUB_REPO, BINARY_NAME)
+	local url = string.format(
+		"https://github.com/%s/%s/releases/latest/download/%s",
+		GITHUB_OWNER,
+		GITHUB_REPO,
+		BINARY_NAME
+	)
 
 	local ok
 	if vim.fn.executable("curl") == 1 then
@@ -62,7 +68,10 @@ function M.install()
 		vim.fn.system({ "wget", "-O", BINARY_PATH, url })
 		ok = vim.v.shell_error == 0
 	else
-		vim.notify("[mdview] curl or wget required to download binary", vim.log.levels.ERROR)
+		vim.notify(
+			"[mdview] curl or wget required to download binary",
+			vim.log.levels.ERROR
+		)
 		return M
 	end
 
@@ -77,9 +86,18 @@ function M.install()
 
 	local final_stat = vim.uv.fs_stat(BINARY_PATH)
 	if final_stat and final_stat.size > 0 then
-		vim.notify("[mdview] Downloaded: " .. BINARY_NAME .. " - size: " .. final_stat.size, vim.log.levels.INFO)
+		vim.notify(
+			"[mdview] Downloaded: "
+				.. BINARY_NAME
+				.. " - size: "
+				.. final_stat.size,
+			vim.log.levels.INFO
+		)
 	else
-		vim.notify("[mdview] Downloaded binary is invalid", vim.log.levels.ERROR)
+		vim.notify(
+			"[mdview] Downloaded binary is invalid",
+			vim.log.levels.ERROR
+		)
 	end
 end
 

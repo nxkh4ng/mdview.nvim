@@ -1,6 +1,6 @@
 local M = {}
-local server = require("mdview.server")
 local config = require("mdview.config")
+local server = require("mdview.server")
 
 local persistent_ch = nil
 local persistent_addr = nil
@@ -19,7 +19,10 @@ end
 function M.post(path, data)
 	local port = server.get_port()
 	if not port then
-		vim.notify("[mdview] server port not ready yet. Try again", vim.log.levels.ERROR)
+		vim.notify(
+			"[mdview] server port not ready yet. Try again",
+			vim.log.levels.ERROR
+		)
 		return false
 	end
 
@@ -34,7 +37,10 @@ function M.post(path, data)
 		persistent_addr = addr
 
 		if not persistent_ch then
-			vim.notify("[mdview] cannot connect to server", vim.log.levels.ERROR)
+			vim.notify(
+				"[mdview] cannot connect to server",
+				vim.log.levels.ERROR
+			)
 			return false
 		end
 	end

@@ -1,7 +1,7 @@
 local M = {}
-local server = require("mdview.server")
 local autocmds = require("mdview.autocmds")
 local config = require("mdview.config")
+local server = require("mdview.server")
 
 function M.start()
 	if vim.bo.filetype ~= "markdown" then
