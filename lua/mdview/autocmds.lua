@@ -5,6 +5,7 @@ local config = require("mdview.config")
 
 local debounce_timer = assert(vim.uv.new_timer(), "[mdview] failed to create debounce timer")
 local prev_line = nil
+local prev_content = nil
 
 local function send_content()
 	prev_line = nil
@@ -12,12 +13,23 @@ local function send_content()
 		config.get().debounce_time,
 		0,
 		vim.schedule_wrap(function()
+			if vim.bo.filetype ~= "markdown" then
+				return
+			end
+
 			local bufnr = vim.api.nvim_get_current_buf()
-			local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
-			local content = table.concat(lines, "\n")
+
 			local path = vim.api.nvim_buf_get_name(bufnr)
 			local base_dir = vim.fn.fnamemodify(path, ":h")
 			base_dir = base_dir:gsub("\\", "/")
+
+			local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+			local content = table.concat(lines, "\n")
+			if content == prev_content then
+				return
+			end
+			prev_content = content
+
 			http.post("/content", {
 				content = content,
 				base_dir = base_dir,
@@ -27,6 +39,10 @@ local function send_content()
 end
 
 local function send_scroll()
+	if vim.bo.filetype ~= "markdown" then
+		return
+	end
+
 	local cursor_line = vim.api.nvim_win_get_cursor(0)[1]
 	if cursor_line == prev_line then
 		return
