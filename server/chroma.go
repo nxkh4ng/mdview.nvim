@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"net/http"
 	"strings"
 	"sync"
 
@@ -26,3 +27,10 @@ var chromaCSS = sync.OnceValue(func() string {
 
 	return s
 })
+
+func handleChromaCSS() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/css; charset=utf-8")
+		w.Write([]byte(chromaCSS()))
+	}
+}

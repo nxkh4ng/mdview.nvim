@@ -159,13 +159,6 @@ func handleSSE(broker *Broker) http.HandlerFunc {
 	}
 }
 
-func handleChromaCSS() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/css; charset=utf-8")
-		w.Write([]byte(chromaCSS()))
-	}
-}
-
 func handleLocalFiles() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		filePath, ok := strings.CutPrefix(r.URL.Path, "/local/")

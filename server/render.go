@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"strings"
 	"sync"
 
 	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
@@ -15,6 +16,23 @@ import (
 type noPreWrapper struct{}
 
 var baseMd = sync.OnceValue(func() goldmark.Markdown {
+	return newGoldmark("")
+})
+var mdCache sync.Map
+
+func newGoldmark(baseDir string) goldmark.Markdown {
+	baseDir = strings.ReplaceAll(baseDir, "\\", "/")
+	transformers := []util.PrioritizedValue{
+		util.Prioritized(&LineInjector{}, 100),
+	}
+
+	if baseDir != "" {
+		transformers = append(
+			transformers,
+			util.Prioritized(&AssetRewriter{BaseDir: baseDir}, 50),
+		)
+	}
+
 	return goldmark.New(
 		goldmark.WithExtensions(
 			extension.Table,
@@ -23,7 +41,6 @@ var baseMd = sync.OnceValue(func() goldmark.Markdown {
 			extension.TaskList,
 			extension.DefinitionList,
 
-			// Syntax highlighting
 			highlighting.NewHighlighting(
 				highlighting.WithStyle("github"),
 				highlighting.WithFormatOptions(
@@ -34,15 +51,11 @@ var baseMd = sync.OnceValue(func() goldmark.Markdown {
 			),
 		),
 
-		// Inject `data-source-line` into DOM
 		goldmark.WithParserOptions(
-			parser.WithASTTransformers(
-				util.Prioritized(&LineInjector{}, 100),
-			),
+			parser.WithASTTransformers(transformers...),
 		),
 	)
-})
-var mdCache sync.Map
+}
 
 func markdownToHTML(source []byte, baseDir string) ([]byte, error) {
 	var buf bytes.Buffer
@@ -65,34 +78,7 @@ func getMarkdown(baseDir string) goldmark.Markdown {
 		return cached.(goldmark.Markdown)
 	}
 
-	md := goldmark.New(
-		goldmark.WithExtensions(
-			extension.Table,
-			extension.Strikethrough,
-			extension.Linkify,
-			extension.TaskList,
-			extension.DefinitionList,
-
-			// Syntax highlighting
-			highlighting.NewHighlighting(
-				highlighting.WithStyle("github"),
-				highlighting.WithFormatOptions(
-					chromahtml.WithClasses(true),
-					chromahtml.WithPreWrapper(noPreWrapper{}),
-				),
-				highlighting.WithWrapperRenderer(codeBlockWrapper),
-			),
-		),
-
-		// Inject `data-source-line` into DOM
-		goldmark.WithParserOptions(
-			parser.WithASTTransformers(
-				util.Prioritized(&LineInjector{}, 100),
-				util.Prioritized(&AssetRewriter{BaseDir: baseDir}, 50),
-			),
-		),
-	)
-
+	md := newGoldmark(baseDir)
 	mdCache.Store(baseDir, md)
 	return md
 }

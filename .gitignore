@@ -1,2 +1,5 @@
 # Binary
-mdview.nvim
+*.exe
+*.test
+server/mdview*
+test.md
