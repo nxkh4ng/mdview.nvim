@@ -24,19 +24,18 @@ local function detect_platform()
 	end
 
 	if os_name == "Linux" then
-		return (arch == "amd64") and "-linux-amd64" or "-linux-arm64"
+		return (arch == "amd64") and "linux-amd64" or "linux-arm64"
 	elseif os_name == "Darwin" then
-		return (arch == "amd64") and "-darwin-amd64" or "-darwin-arm64"
+		return (arch == "amd64") and "darwin-amd64" or "darwin-arm64"
 	elseif os_name == "Windows_NT" then
-		return (arch == "amd64") and "-windows-amd64.exe"
-			or "-windows-arm64.exe"
+		return (arch == "amd64") and "windows-amd64" or "windows-arm64"
 	end
 
 	return nil
 end
 
-local suffix = detect_platform()
-if not suffix then
+local os_platform = detect_platform()
+if not os_platform then
 	local os_name = vim.uv.os_uname().sysname
 	local arch = vim.uv.os_uname().machine
 
@@ -46,7 +45,13 @@ if not suffix then
 	return M
 end
 
-local BINARY_NAME = "mdview" .. suffix
+local is_windows = vim.fn.has("win32") == 1
+local archive_ext = is_windows and ".zip" or ".tar.gz"
+
+local ARCHIVE_NAME = "mdview-" .. os_platform .. archive_ext
+local ARCHIVE_PATH = INSTALL_DIR .. sep .. ARCHIVE_NAME
+
+local BINARY_NAME = is_windows and "mdview.exe" or "mdview"
 local BINARY_PATH = INSTALL_DIR .. sep .. BINARY_NAME
 M.binary_path = BINARY_PATH
 
@@ -57,15 +62,15 @@ function M.install()
 		"https://github.com/%s/%s/releases/latest/download/%s",
 		GITHUB_OWNER,
 		GITHUB_REPO,
-		BINARY_NAME
+		ARCHIVE_NAME
 	)
 
 	local ok
 	if vim.fn.executable("curl") == 1 then
-		vim.fn.system({ "curl", "-fL", "-o", BINARY_PATH, url })
+		vim.fn.system({ "curl", "-fL", "-o", ARCHIVE_PATH, url })
 		ok = vim.v.shell_error == 0
 	elseif vim.fn.executable("wget") == 1 then
-		vim.fn.system({ "wget", "-O", BINARY_PATH, url })
+		vim.fn.system({ "wget", "-O", ARCHIVE_PATH, url })
 		ok = vim.v.shell_error == 0
 	else
 		vim.notify(
@@ -80,7 +85,14 @@ function M.install()
 		return M
 	end
 
-	if vim.fn.has("win32") ~= 1 then
+	if is_windows then
+		vim.fn.system({ "tar", "xf", ARCHIVE_PATH, "-C", INSTALL_DIR })
+	else
+		vim.fn.system({ "tar", "xzf", ARCHIVE_PATH, "-C", INSTALL_DIR })
+	end
+	os.remove(ARCHIVE_PATH)
+
+	if not is_windows then
 		vim.fn.system({ "chmod", "+x", BINARY_PATH })
 	end
 

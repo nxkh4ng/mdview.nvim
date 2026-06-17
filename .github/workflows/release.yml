@@ -8,9 +8,6 @@ on:
 permissions:
   contents: write
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -18,21 +15,18 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.24"
+          go-version-file: server/go.mod
           cache: true
           cache-dependency-path: server/go.sum
       - run: go test -C server ./...
 
-  build:
+  goreleaser:
     needs: test
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        target_os: [linux, darwin, windows]
-        arch: [amd64, arm64]
-
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-go@v5
         with:
@@ -40,33 +34,9 @@ jobs:
           cache: true
           cache-dependency-path: server/go.sum
 
-      - name: Build
-        run: |
-          suffix="-${{ matrix.target_os }}-${{ matrix.arch }}"
-          if [ "${{ matrix.target_os }}" = "windows" ]; then
-            suffix="$suffix.exe"
-          fi
-          CGO_ENABLED=0 GOOS=${{ matrix.target_os }} GOARCH=${{ matrix.arch }} \
-            go build -C server -trimpath -ldflags="-s -w" \
-            -o "mdview$suffix" ./...
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - uses: goreleaser/goreleaser-action@v6
         with:
-          name: mdview-${{ matrix.target_os }}-${{ matrix.arch }}
-          path: server/mdview*
-          if-no-files-found: error
-
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-
-      - uses: softprops/action-gh-release@v2
-        with:
-          files: artifacts/*/*
-          generate_release_notes: true
-          name: ${{ github.ref_name }}
+          version: "~> v2"
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,4 +1,4 @@
-# Binary
+dist/
 *.exe
 *.test
 server/mdview*
