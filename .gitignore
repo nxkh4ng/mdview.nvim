@@ -2,4 +2,3 @@ dist/
 *.exe
 *.test
 server/mdview*
-test.md

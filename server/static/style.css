@@ -49,7 +49,7 @@
 
 body {
   margin: 0;
-  padding: 16px;
+  padding: 16px 32px;
   font-family: var(--font-sans);
   font-size: 16px;
   line-height: 1.5;
@@ -278,7 +278,7 @@ body {
   border-top: 1px solid var(--border-default);
 }
 
-/* Markdown alert (note/warning/tip) */
+/* Markdown alert (note/warning/tip/important/caution) */
 #preview .markdown-alert {
   padding: 8px 16px;
   margin-bottom: 16px;
@@ -301,6 +301,34 @@ body {
 }
 #preview .markdown-alert.markdown-alert-caution {
   border-left-color: var(--danger-emphasis);
+}
+#preview .markdown-alert.markdown-alert-important {
+  border-left-color: var(--done-emphasis);
+}
+#preview .markdown-alert-title {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 0;
+}
+#preview .markdown-alert-note .markdown-alert-title {
+  color: var(--fg-accent);
+}
+#preview .markdown-alert-tip .markdown-alert-title {
+  color: var(--fg-success);
+}
+#preview .markdown-alert-warning .markdown-alert-title {
+  color: var(--fg-attention);
+}
+#preview .markdown-alert-caution .markdown-alert-title {
+  color: var(--fg-danger);
+}
+#preview .markdown-alert-important .markdown-alert-title {
+  color: var(--done-emphasis);
+}
+#preview .markdown-alert-title svg {
+  fill: currentColor;
 }
 
 /* First/last child margin reset */

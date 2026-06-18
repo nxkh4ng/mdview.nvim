@@ -2,8 +2,14 @@ package main
 
 import (
 	"bytes"
+	"os"
+	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/yuin/goldmark/ast"
+	"github.com/yuin/goldmark/parser"
+	"github.com/yuin/goldmark/text"
 )
 
 func TestMarkdownToHTML_SimpleParagraph(t *testing.T) {
@@ -94,6 +100,57 @@ func TestDataLineInjection_Simple(t *testing.T) {
 	}
 	if !bytes.Contains(html, []byte(`data-source-line="3"`)) {
 		t.Errorf("expected data-source-line=3 (empty line=2), got:\n%s", html)
+	}
+}
+
+func TestDataLineInjection_Table(t *testing.T) {
+	input := []byte("| A | B |\n|---|---|\n| 1 | 2 |")
+	html, err := markdownToHTML(input, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Table and cells should have data-source-line
+	if !bytes.Contains(html, []byte(`data-source-line="1"`)) {
+		t.Errorf("expected data-source-line=1 on table/header, got:\n%s", html)
+	}
+	if !bytes.Contains(html, []byte(`data-source-line="3"`)) {
+		t.Errorf("expected data-source-line=3 on data row, got:\n%s", html)
+	}
+}
+
+func TestDataLineInjection_DefinitionList(t *testing.T) {
+	input := []byte("term\n: definition")
+	html, err := markdownToHTML(input, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !bytes.Contains(html, []byte(`<dt`)) {
+		t.Errorf("expected <dt>, got:\n%s", html)
+	}
+	if !bytes.Contains(html, []byte(`data-source-line="1"`)) {
+		t.Errorf("expected data-source-line=1 on dt, got:\n%s", html)
+	}
+	if !bytes.Contains(html, []byte(`data-source-line="2"`)) {
+		t.Errorf("expected data-source-line=2 on dd, got:\n%s", html)
+	}
+}
+
+func TestDataLineInjection_HTMLBlock(t *testing.T) {
+	// Raw HTML block: kbd should NOT have data-source-line
+	// (it's raw HTML passthrough, not a goldmark AST node)
+	input := []byte("before\n\n<kbd>Ctrl</kbd>\n\nafter")
+	html, err := markdownToHTML(input, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !bytes.Contains(html, []byte(`data-source-line="1"`)) {
+		t.Errorf("expected data-source-line=1 on first paragraph, got:\n%s", html)
+	}
+	if !bytes.Contains(html, []byte(`data-source-line="5"`)) {
+		t.Errorf("expected data-source-line=5 on last paragraph, got:\n%s", html)
 	}
 }
 
@@ -229,5 +286,106 @@ func TestMarkdownToHTML_WindowsBackslash(t *testing.T) {
 	}
 	if !strings.Contains(string(html), "/local/C:/Users/docs/image.png") {
 		t.Errorf("expected normalized Windows path, got:\n%s", html)
+	}
+}
+
+// --- Benchmark helpers ---
+
+// benchSource generates markdown with n lines of content.
+func benchSource(n int) []byte {
+	var buf bytes.Buffer
+	buf.WriteString("# Title\n\n")
+	for i := range n / 3 {
+		// Mix of paragraphs, lists, and code blocks
+		buf.WriteString("Paragraph ")
+		buf.WriteString(strconv.Itoa(i))
+		buf.WriteString(" with **bold** and *italic*.\n\n")
+
+		buf.WriteString("- list item ")
+		buf.WriteString(strconv.Itoa(i))
+		buf.WriteString("\n\n")
+
+		buf.WriteString("```go\n")
+		buf.WriteString("func foo() {\n")
+		buf.WriteString("    fmt.Println(\"hello\")\n")
+		buf.WriteString("}\n")
+		buf.WriteString("```\n\n")
+	}
+	return buf.Bytes()
+}
+
+var benchTestMD = func() []byte {
+	b, _ := os.ReadFile("../test.md")
+	if b == nil {
+		return benchSource(597)
+	}
+	return b
+}()
+
+// --- Benchmark: full pipeline ---
+
+func BenchmarkMarkdownToHTML_Short(b *testing.B) {
+	src := benchSource(50)
+
+	for b.Loop() {
+		markdownToHTML(src, "")
+	}
+}
+
+func BenchmarkMarkdownToHTML_Medium(b *testing.B) {
+	src := benchSource(500)
+
+	for b.Loop() {
+		markdownToHTML(src, "")
+	}
+}
+
+func BenchmarkMarkdownToHTML_Large(b *testing.B) {
+	src := benchSource(5000)
+
+	for b.Loop() {
+		markdownToHTML(src, "")
+	}
+}
+
+func BenchmarkMarkdownToHTML_TestFile(b *testing.B) {
+	src := benchTestMD
+
+	for b.Loop() {
+		markdownToHTML(src, "")
+	}
+}
+
+// --- Benchmark: micro-benchmarks ---
+
+func BenchmarkLineOfNode(b *testing.B) {
+	src := []byte("# Title\n\nParagraph with **bold**.\n\n- item 1\n- item 2\n")
+	md := getMarkdown("")
+	reader := text.NewReader(src)
+	doc := md.Parser().Parse(reader, parser.WithContext(parser.NewContext()))
+
+	var nodes []ast.Node
+	ast.Walk(doc, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
+		if entering && n.Type() == ast.TypeBlock {
+			nodes = append(nodes, n)
+		}
+		return ast.WalkContinue, nil
+	})
+
+	for b.Loop() {
+		for _, n := range nodes {
+			lineOfNode(src, n)
+		}
+	}
+}
+
+func BenchmarkStampLineNumbers(b *testing.B) {
+	src := benchTestMD
+	md := getMarkdown("")
+	reader := text.NewReader(src)
+	doc := md.Parser().Parse(reader, parser.WithContext(parser.NewContext()))
+
+	for b.Loop() {
+		stampLineNumbers(doc, src)
 	}
 }
