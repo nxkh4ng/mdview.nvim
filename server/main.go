@@ -17,6 +17,8 @@ func main() {
 	host := flag.String("host", "127.0.0.1", "listen host")
 	port := flag.Int("port", 0, "listen port (0 = random)")
 	browser := flag.String("browser", "", "browser command")
+	maxBodySize := flag.Int("max-body-size", 10, "max request body size in MB")
+	renderTimeout := flag.Int("render-timeout", 10, "max render time in seconds")
 	flag.Parse()
 
 	addr := fmt.Sprintf("%s:%d", *host, *port)
@@ -42,7 +44,7 @@ func main() {
 	// and setup routes
 	mux := http.NewServeMux()
 	broker := NewBroker()
-	setupRoutes(mux, broker)
+	setupRoutes(mux, broker, *maxBodySize, *renderTimeout)
 
 	// Route for /ping
 	// and / (static)

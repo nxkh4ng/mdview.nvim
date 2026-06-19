@@ -11,7 +11,7 @@ local prev_content = nil
 local function send_content()
 	prev_line = nil
 	debounce_timer:start(
-		config.get().debounce_time,
+		config.get().debounce_ms,
 		0,
 		vim.schedule_wrap(function()
 			if vim.bo.filetype ~= "markdown" then

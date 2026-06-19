@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 )
 
 type ContentRequest struct {
@@ -32,9 +33,10 @@ var (
 	baseDirMu      sync.RWMutex
 )
 
-func handleContent(broker *Broker) http.HandlerFunc {
+func handleContent(broker *Broker, maxBodySize, renderTimeout int) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Read all body from request
+		r.Body = http.MaxBytesReader(w, r.Body, int64(maxBodySize)*1024*1024)
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, "cannot read body", http.StatusBadRequest)
@@ -52,7 +54,7 @@ func handleContent(broker *Broker) http.HandlerFunc {
 		currentBaseDir = filepath.Clean(req.BaseDir)
 		baseDirMu.Unlock()
 
-		htmlData, err := markdownToHTML([]byte(req.Content), req.BaseDir)
+		htmlData, err := markdownToHTMLWithTimeout([]byte(req.Content), req.BaseDir, time.Duration(renderTimeout)*time.Second)
 		if err != nil {
 			http.Error(w, "cannot render markdown", http.StatusInternalServerError)
 			return
@@ -81,8 +83,9 @@ func handleContent(broker *Broker) http.HandlerFunc {
 	}
 }
 
-func handleScroll(broker *Broker) http.HandlerFunc {
+func handleScroll(broker *Broker, maxBodySize int) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		r.Body = http.MaxBytesReader(w, r.Body, int64(maxBodySize)*1024*1024)
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, "cannot read body", http.StatusBadRequest)
@@ -167,17 +170,17 @@ func handleLocalFiles() http.HandlerFunc {
 			return
 		}
 		filePath = filepath.FromSlash(filePath)
+		filePath = filepath.Clean(filePath)
 
 		if !filepath.IsAbs(filePath) {
 			filePath = filepath.Join("/", filePath)
-			filePath = filepath.Clean(filePath)
 		}
 
 		baseDirMu.RLock()
 		baseDir := currentBaseDir
 		baseDirMu.RUnlock()
 
-		if baseDir == "" || !strings.HasPrefix(filePath, baseDir) {
+		if baseDir == "" || !strings.HasPrefix(filePath, baseDir+string(filepath.Separator)) {
 			http.NotFound(w, r)
 			return
 		}

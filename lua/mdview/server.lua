@@ -32,6 +32,16 @@ function M.start(cfg)
 		table.insert(args, cfg.browser)
 	end
 
+	if cfg.max_mb_body_size ~= 10 then
+		table.insert(args, "-max-body-size")
+		table.insert(args, cfg.max_mb_body_size)
+	end
+
+	if cfg.render_timeout_sec ~= 10 then
+		table.insert(args, "-render-timeout")
+		table.insert(args, cfg.render_timeout_sec)
+	end
+
 	process = vim.system(args, {
 		text = true,
 		detach = true,

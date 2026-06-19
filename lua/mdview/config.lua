@@ -4,7 +4,9 @@ local defaults = {
 	host = "127.0.0.1",
 	port = 0,
 	browser = "",
-	debounce_time = 50,
+	debounce_ms = 50,
+	max_mb_body_size = 10,
+	render_timeout_sec = 10,
 }
 
 function M.setup(opts)

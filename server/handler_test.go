@@ -100,3 +100,34 @@ func TestHandleLocalFiles_DotPath(t *testing.T) {
 		t.Errorf("expected 404 for dot path traversal, got %d", w.Code)
 	}
 }
+
+func TestHandleLocalFiles_AbsolutePathTraversal(t *testing.T) {
+	filePath := setupTestBaseDir(t)
+	baseDir := filepath.Dir(filePath)
+
+	fakeBase := baseDir + "-extra"
+	url := "/local/" + fakeBase + "/test.md"
+	w := request(t, url)
+
+	if w.Code != http.StatusNotFound {
+		t.Errorf("expected 404 for path traversal, got %d (url=%s)", w.Code, url)
+	}
+}
+
+func TestHandleLocalFiles_PrefixCheckBypass(t *testing.T) {
+	filePath := setupTestBaseDir(t)
+	baseDir := filepath.Dir(filePath)
+
+	fakeDir := baseDir + "-secret"
+	os.MkdirAll(fakeDir, 0755)
+	fakeFile := filepath.Join(fakeDir, "sneaky.md")
+	os.WriteFile(fakeFile, []byte("leaked"), 0644)
+
+	url := "/local" + fakeDir + "/sneaky.md"
+
+	w := request(t, url)
+
+	if w.Code == http.StatusOK {
+		t.Errorf("file served from outside baseDir! body=%q", w.Body.String())
+	}
+}

@@ -2,9 +2,11 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
 	"github.com/yuin/goldmark"
@@ -80,6 +82,29 @@ func markdownToHTML(source []byte, baseDir string) ([]byte, error) {
 		return nil, err
 	}
 	return buf.Bytes(), nil
+}
+
+func markdownToHTMLWithTimeout(source []byte, baseDir string, timeout time.Duration) ([]byte, error) {
+	type result struct {
+		html []byte
+		err  error
+	}
+
+	ch := make(chan result, 1)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	go func() {
+		html, err := markdownToHTML(source, baseDir)
+		ch <- result{html, err}
+	}()
+
+	select {
+	case r := <-ch:
+		return r.html, r.err
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	}
 }
 
 // stampLineNumbers sets data-source-line on block nodes that are
