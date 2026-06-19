@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"embed"
 	"flag"
 	"fmt"
@@ -8,6 +9,10 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
 //go:embed static/*
@@ -59,6 +64,19 @@ func main() {
 	}
 	mux.Handle("GET /", http.FileServer(http.FS(subDir)))
 
-	// Serve HTTP on listener
-	log.Fatal(http.Serve(listener, mux))
+	srv := &http.Server{Handler: mux}
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+
+	go func() {
+		<-quit
+		fmt.Println("shutting down gracefully...")
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		srv.Shutdown(ctx)
+	}()
+
+	if err := srv.Serve(listener); err != nil && err != http.ErrServerClosed {
+		log.Fatal(err)
+	}
 }

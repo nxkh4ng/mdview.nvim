@@ -70,6 +70,7 @@ function M.stop()
 			process:kill("sigterm")
 		end
 
+		process:wait(3000)
 		process = nil
 		port = nil
 		vim.notify("[mdview] server stopped", vim.log.levels.INFO)
