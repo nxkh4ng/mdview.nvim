@@ -47,6 +47,8 @@ func (r *AssetRewriter) Transform(doc *ast.Document, reader text.Reader, pc pars
 func needsRewrite(dest string) bool {
 	return !strings.HasPrefix(dest, "http://") &&
 		!strings.HasPrefix(dest, "https://") &&
+		!strings.HasPrefix(dest, "mailto:") &&
+		!strings.HasPrefix(dest, "tel:") &&
 		!strings.HasPrefix(dest, "data:") &&
 		!strings.HasPrefix(dest, "#") &&
 		!strings.HasPrefix(dest, "/")

@@ -389,3 +389,13 @@ func BenchmarkStampLineNumbers(b *testing.B) {
 		stampLineNumbers(doc, src)
 	}
 }
+
+func TestAssetRewriter_MailtoLink(t *testing.T) {
+	html, err := markdownToHTML([]byte("[email](mailto:test@test.com)"), "/home/user/docs")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(html), "/local") {
+		t.Errorf("mailto: link should NOT be rewritten, got:\n%s", html)
+	}
+}
