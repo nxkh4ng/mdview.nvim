@@ -92,6 +92,8 @@ end
 function M.disable()
 	debounce_timer:stop()
 	pcall(vim.api.nvim_del_augroup_by_name, "mdview")
+	prev_content = nil
+	prev_line = nil
 end
 
 return M
