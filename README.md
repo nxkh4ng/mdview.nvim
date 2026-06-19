@@ -2,7 +2,7 @@
 
 > Live markdown preview in your browser.
 
-![Demo](./assets/mdview.png)
+![Demo](./assets/demo.gif)
 
 ## Features
 
@@ -78,9 +78,18 @@ require("mdview").setup({
     -- examples: "firefox", "chromium", "brave-browser",...
     browser = "",
 
-    -- ms to wait after typing before updating preview
+    -- wait after typing before updating preview
     -- lower = more responsive, higher = less overhead
-    debounce_time = 50,
+    debounce_ms = 50,
+
+    -- max request body size in MB
+    -- larger values allow bigger markdown files but risk OOM
+    max_mb_body_size = 10,
+
+    -- max seconds to wait for markdown rendering before timeout
+    -- increase if you use complex content (LaTeX, mermaid diagrams, etc.)
+    render_timeout_sec = 10,
+
 })
 ```
 
