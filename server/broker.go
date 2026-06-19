@@ -13,7 +13,7 @@ func NewClient() *Client {
 }
 
 type Broker struct {
-	mu      sync.Mutex
+	mu      sync.RWMutex
 	clients map[*Client]struct{}
 
 	latestContent string
@@ -67,8 +67,8 @@ func (b *Broker) SetLatestContent(event string) {
 }
 
 func (b *Broker) GetLatestContent() string {
-	b.mu.Lock()
-	defer b.mu.Unlock()
+	b.mu.RLock()
+	defer b.mu.RUnlock()
 
 	return b.latestContent
 }
@@ -81,8 +81,8 @@ func (b *Broker) SetLatestScroll(event string) {
 }
 
 func (b *Broker) GetLatestScroll() string {
-	b.mu.Lock()
-	defer b.mu.Unlock()
+	b.mu.RLock()
+	defer b.mu.RUnlock()
 
 	return b.latestScroll
 }
