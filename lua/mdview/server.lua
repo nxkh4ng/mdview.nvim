@@ -22,25 +22,17 @@ function M.start(cfg)
 	table.insert(args, "-host")
 	table.insert(args, cfg.host)
 
-	if cfg.port ~= 0 then
-		table.insert(args, "-port")
-		table.insert(args, tostring(cfg.port))
-	end
+	table.insert(args, "-port")
+	table.insert(args, tostring(cfg.port))
 
-	if cfg.browser ~= "" then
-		table.insert(args, "-browser")
-		table.insert(args, cfg.browser)
-	end
+	table.insert(args, "-browser")
+	table.insert(args, cfg.browser)
 
-	if cfg.max_mb_body_size ~= 10 then
-		table.insert(args, "-max-body-size")
-		table.insert(args, cfg.max_mb_body_size)
-	end
+	table.insert(args, "-max-body-size")
+	table.insert(args, cfg.max_mb_body_size)
 
-	if cfg.render_timeout_sec ~= 10 then
-		table.insert(args, "-render-timeout")
-		table.insert(args, cfg.render_timeout_sec)
-	end
+	table.insert(args, "-render-timeout")
+	table.insert(args, cfg.render_timeout_sec)
 
 	process = vim.system(args, {
 		text = true,

@@ -8,15 +8,17 @@ local defaults = {
 	max_mb_body_size = 10,
 	render_timeout_sec = 10,
 }
+local options = {}
 
 function M.setup(opts)
-	if opts then
-		defaults = vim.tbl_deep_extend("force", defaults, opts)
-	end
+	options = vim.tbl_deep_extend("force", {}, defaults, opts or {})
 end
 
 function M.get()
-	return defaults
+	if vim.tbl_isempty(options) then
+		M.setup()
+	end
+	return vim.deepcopy(options)
 end
 
 return M
