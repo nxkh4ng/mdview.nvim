@@ -399,3 +399,72 @@ func TestAssetRewriter_MailtoLink(t *testing.T) {
 		t.Errorf("mailto: link should NOT be rewritten, got:\n%s", html)
 	}
 }
+
+func TestAlertNoteHTML(t *testing.T) {
+	input := []byte("> [!NOTE]\n> Highlights information that users should take into account, even when skimming.\n")
+	html, err := markdownToHTML(input, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !bytes.Contains(html, []byte(`class="markdown-alert markdown-alert-note"`)) {
+		t.Errorf("expected alert div with note class, got:\n%s", html)
+	}
+	if !bytes.Contains(html, []byte(`class="markdown-alert-title"`)) {
+		t.Errorf("expected alert title class, got:\n%s", html)
+	}
+	if !bytes.Contains(html, []byte(`data-source-line="1"`)) {
+		t.Errorf("expected data-source-line=1 on alert, got:\n%s", html)
+	}
+	if !bytes.Contains(html, []byte("<svg")) {
+		t.Errorf("expected SVG icon in output, got:\n%s", html)
+	}
+	if !bytes.Contains(html, []byte("Note")) {
+		t.Errorf("expected title text 'Note' in output, got:\n%s", html)
+	}
+	if !bytes.Contains(html, []byte("Highlights information")) {
+		t.Errorf("expected body content, got:\n%s", html)
+	}
+	if !bytes.Contains(html, []byte("</div>")) {
+		t.Errorf("expected closing </div> tag, got:\n%s", html)
+	}
+}
+func TestAlertWarningHTML(t *testing.T) {
+	input := []byte("> [!WARNING]\n> Proceed with caution.\n")
+	html, err := markdownToHTML(input, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !bytes.Contains(html, []byte(`markdown-alert-warning`)) {
+		t.Errorf("expected warning class, got:\n%s", html)
+	}
+	if !bytes.Contains(html, []byte("Warning")) {
+		t.Errorf("expected title text 'Warning', got:\n%s", html)
+	}
+}
+func TestAlertRegularBlockquoteFallback(t *testing.T) {
+	input := []byte("> This is a regular blockquote.\n")
+	html, err := markdownToHTML(input, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if bytes.Contains(html, []byte("markdown-alert")) {
+		t.Errorf("should NOT render as alert, got:\n%s", html)
+	}
+	if !bytes.Contains(html, []byte("<blockquote")) {
+		t.Errorf("expected <blockquote> for regular quote, got:\n%s", html)
+	}
+}
+func TestAlertExtraTextFallback(t *testing.T) {
+	input := []byte("> [!NOTE] Extra text here\n")
+	html, err := markdownToHTML(input, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if bytes.Contains(html, []byte("markdown-alert")) {
+		t.Errorf("should NOT render as alert when extra text follows, got:\n%s", html)
+	}
+}

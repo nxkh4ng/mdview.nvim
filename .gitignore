@@ -1,4 +1,5 @@
 dist/
 *.exe
 *.test
+*.out
 server/mdview*

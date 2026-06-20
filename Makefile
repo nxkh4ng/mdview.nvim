@@ -8,7 +8,7 @@ GO_FLAGS = -trimpath -ldflags="$(LDFLAGS)"
 export CGO_ENABLED=0
 
 dev:
-	go build -C $(GO_DIR) $(GO_FLAGS) -o $(LOCAL_BUILD_PATH)/$(BINARY_NAME) ./...
+	go build -C $(GO_DIR) $(GO_FLAGS) -o $(LOCAL_BUILD_PATH)/$(BINARY_NAME) .
 	ls -lha $(LOCAL_BUILD_PATH)
 
 run:

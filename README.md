@@ -20,6 +20,7 @@
   - Strikethrough
   - Definition lists
   - Auto-links
+  - Alerts: NOTE, TIP, IMPORTANT, WARNING, CAUTION
 - Syntax highlighting for code blocks (light + dark themes)
 - Preview local images, links to other files - relative paths
   resolved automatically
