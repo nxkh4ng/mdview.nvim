@@ -2,7 +2,7 @@
 
 > Live markdown preview in your browser.
 
-![Demo](./assets/demo.gif)
+![Demo](./assets/mdview.png)
 
 ## Features
 
