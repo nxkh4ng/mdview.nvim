@@ -19,6 +19,7 @@ import (
 	"github.com/yuin/goldmark/util"
 
 	"mdview.nvim/githubalert"
+	"mdview.nvim/metablock"
 )
 
 type noPreWrapper struct{}
@@ -56,6 +57,7 @@ func newGoldmark(baseDir string) goldmark.Markdown {
 				highlighting.WithWrapperRenderer(codeBlockWrapper),
 			),
 			&githubalert.Extension{},
+			&metablock.Extension{},
 		),
 
 		goldmark.WithParserOptions(
