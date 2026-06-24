@@ -21,6 +21,7 @@
   - Definition lists
   - Auto-links
   - Alerts: NOTE, TIP, IMPORTANT, WARNING, CAUTION
+- YAML metadata
 - Syntax highlighting for code blocks (light + dark themes)
 - Preview local images, links to other files - relative paths
   resolved automatically

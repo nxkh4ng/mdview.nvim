@@ -24,10 +24,19 @@ import (
 
 type noPreWrapper struct{}
 
-var baseMd = sync.OnceValue(func() goldmark.Markdown {
-	return newGoldmark("")
-})
-var mdCache sync.Map
+type result struct {
+	html []byte
+	err  error
+}
+
+var (
+	baseMd = sync.OnceValue(func() goldmark.Markdown {
+		return newGoldmark("")
+	})
+	mdCache      sync.Map
+	renderMu     sync.Mutex
+	renderCancel context.CancelFunc
+)
 
 func newGoldmark(baseDir string) goldmark.Markdown {
 	baseDir = strings.ReplaceAll(baseDir, "\\", "/")
@@ -90,18 +99,22 @@ func markdownToHTML(source []byte, baseDir string) ([]byte, error) {
 }
 
 func markdownToHTMLWithTimeout(source []byte, baseDir string, timeout time.Duration) ([]byte, error) {
-	type result struct {
-		html []byte
-		err  error
+	renderMu.Lock()
+	if renderCancel != nil {
+		renderCancel()
 	}
 
-	ch := make(chan result, 1)
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
+	renderCancel = cancel
+	renderMu.Unlock()
 
+	ch := make(chan result, 1)
 	go func() {
 		html, err := markdownToHTML(source, baseDir)
-		ch <- result{html, err}
+		select {
+		case ch <- result{html, err}:
+		case <-ctx.Done():
+		}
 	}()
 
 	select {
