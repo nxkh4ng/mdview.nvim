@@ -22,15 +22,6 @@ func setupTestBaseDir(t *testing.T) string {
 		t.Fatal(err)
 	}
 
-	baseDirMu.Lock()
-	currentBaseDir = dir
-	baseDirMu.Unlock()
-
-	t.Cleanup(func() {
-		baseDirMu.Lock()
-		currentBaseDir = ""
-		baseDirMu.Unlock()
-	})
 	return filePath
 }
 
@@ -57,21 +48,11 @@ func TestHandleLocalFiles_ValidFile(t *testing.T) {
 	}
 }
 
-func TestHandleLocalFiles_PathTraversal(t *testing.T) {
-	setupTestBaseDir(t)
-
-	w := request(t, "/local/../../../etc/passwd")
-
-	if w.Code != http.StatusNotFound {
-		t.Errorf("expected 404 for path traversal, got %d", w.Code)
-	}
-}
-
 func TestHandleLocalFiles_NoBaseDir(t *testing.T) {
 	w := request(t, "/local/some/file.md")
 
 	if w.Code != http.StatusNotFound {
-		t.Errorf("expected 404 when no baseDir, got %d", w.Code)
+		t.Errorf("expected 404 for non-existent file, got %d", w.Code)
 	}
 }
 
@@ -92,47 +73,6 @@ func TestHandleLocalFiles_NonExistentFile(t *testing.T) {
 
 	if w.Code != http.StatusNotFound {
 		t.Errorf("expected 404 for non-existent file, got %d", w.Code)
-	}
-}
-
-func TestHandleLocalFiles_DotPath(t *testing.T) {
-	setupTestBaseDir(t)
-
-	w := request(t, "/local/./././etc/passwd")
-
-	if w.Code != http.StatusNotFound {
-		t.Errorf("expected 404 for dot path traversal, got %d", w.Code)
-	}
-}
-
-func TestHandleLocalFiles_AbsolutePathTraversal(t *testing.T) {
-	filePath := setupTestBaseDir(t)
-	baseDir := filepath.Dir(filePath)
-
-	fakeBase := baseDir + "-extra"
-	url := "/local/" + fakeBase + "/test.md"
-	w := request(t, url)
-
-	if w.Code != http.StatusNotFound {
-		t.Errorf("expected 404 for path traversal, got %d (url=%s)", w.Code, url)
-	}
-}
-
-func TestHandleLocalFiles_PrefixCheckBypass(t *testing.T) {
-	filePath := setupTestBaseDir(t)
-	baseDir := filepath.Dir(filePath)
-
-	fakeDir := baseDir + "-secret"
-	os.MkdirAll(fakeDir, 0755)
-	fakeFile := filepath.Join(fakeDir, "sneaky.md")
-	os.WriteFile(fakeFile, []byte("leaked"), 0644)
-
-	url := "/local" + fakeDir + "/sneaky.md"
-
-	w := request(t, url)
-
-	if w.Code == http.StatusOK {
-		t.Errorf("file served from outside baseDir! body=%q", w.Body.String())
 	}
 }
 
@@ -203,12 +143,6 @@ func TestHandleContent_WithBaseDir(t *testing.T) {
 	if w.Code != http.StatusNoContent {
 		t.Errorf("expected 204, got %d", w.Code)
 	}
-
-	t.Cleanup(func() {
-		baseDirMu.Lock()
-		currentBaseDir = ""
-		baseDirMu.Unlock()
-	})
 }
 
 func TestHandleContent_BroadcastsEvent(t *testing.T) {

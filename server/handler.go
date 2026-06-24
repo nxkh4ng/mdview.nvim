@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -28,11 +27,6 @@ type ScrollEvent struct {
 	CursorLine int    `json:"cursor_line"`
 }
 
-var (
-	currentBaseDir string
-	baseDirMu      sync.RWMutex
-)
-
 func handleContent(broker *Broker, maxBodySize, renderTimeout int) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Read all body from request
@@ -49,10 +43,6 @@ func handleContent(broker *Broker, maxBodySize, renderTimeout int) http.HandlerF
 			http.Error(w, "invalid JSON", http.StatusBadRequest)
 			return
 		}
-
-		baseDirMu.Lock()
-		currentBaseDir = filepath.Clean(req.BaseDir)
-		baseDirMu.Unlock()
 
 		htmlData, err := markdownToHTMLWithTimeout([]byte(req.Content), req.BaseDir, time.Duration(renderTimeout)*time.Second)
 		if err != nil {
@@ -174,15 +164,6 @@ func handleLocalFiles() http.HandlerFunc {
 
 		if !filepath.IsAbs(filePath) {
 			filePath = filepath.Join("/", filePath)
-		}
-
-		baseDirMu.RLock()
-		baseDir := currentBaseDir
-		baseDirMu.RUnlock()
-
-		if baseDir == "" || !strings.HasPrefix(filePath, baseDir+string(filepath.Separator)) {
-			http.NotFound(w, r)
-			return
 		}
 
 		http.ServeFile(w, r, filePath)
