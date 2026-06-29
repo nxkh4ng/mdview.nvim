@@ -22,6 +22,7 @@
   - Auto-links
   - Alerts: NOTE, TIP, IMPORTANT, WARNING, CAUTION
 - YAML metadata
+- Emoji support
 - Syntax highlighting for code blocks (light + dark themes)
 - Preview local images, links to other files - relative paths
   resolved automatically
@@ -53,7 +54,7 @@
 
 > [!NOTE]
 >
-> On first run, the plugin automatically downloads the prebuilt Go binary
+> On first run, the plugin automatically downloads the latest Go binary
 > from [GitHub Release](https://github.com/nxkh4ng/mdview.nvim/releases).
 
 ## Usage

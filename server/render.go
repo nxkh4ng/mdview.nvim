@@ -10,6 +10,7 @@ import (
 
 	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
 	"github.com/yuin/goldmark"
+	emoji "github.com/yuin/goldmark-emoji"
 	highlighting "github.com/yuin/goldmark-highlighting/v2"
 	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/extension"
@@ -56,6 +57,7 @@ func newGoldmark(baseDir string) goldmark.Markdown {
 			extension.Linkify,
 			extension.TaskList,
 			extension.DefinitionList,
+			emoji.Emoji,
 
 			highlighting.NewHighlighting(
 				highlighting.WithStyle("github"),
