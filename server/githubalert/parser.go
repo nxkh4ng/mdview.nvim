@@ -11,7 +11,7 @@ import (
 	"github.com/yuin/goldmark/util"
 )
 
-var alertRegex = regexp.MustCompile(`^\[!([a-zA-Z]+)\]\s*$`)
+var alertRegex = regexp.MustCompile(`^\[!([a-zA-Z]+)\](?:\s+(.*?))?\s*$`)
 
 var validKinds = map[string]struct{}{
 	"note":      {},
@@ -127,6 +127,21 @@ func (p *alertTitleParser) Open(parent ast.Node, reader text.Reader, pc parser.C
 
 	title := NewAlertTitle()
 	title.SetAttributeString("kind", kind)
+
+	line, seg := reader.PeekLine()
+	for len(line) > 0 && (line[0] == ' ' || line[0] == '\t') {
+		line = line[1:]
+		seg = seg.WithStart(seg.Start + 1)
+	}
+	if len(line) > 0 && line[len(line)-1] == '\n' {
+		line = line[:len(line)-1]
+		seg = seg.WithStop(seg.Stop - 1)
+	}
+	if len(line) > 0 {
+		title.Lines().Append(seg)
+	}
+
+	reader.Advance(len(line))
 
 	return title, parser.NoChildren
 }

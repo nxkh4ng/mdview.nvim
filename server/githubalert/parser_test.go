@@ -161,12 +161,57 @@ func TestParserFallbackInvalidKind(t *testing.T) {
 	}
 }
 
+func TestParserCustomTitle(t *testing.T) {
+	src := "> [!NOTE] Lưu ý quan trọng\n> nội dung\n"
+	doc := parse(t, src)
+	alert := findAlert(doc)
+	if alert == nil {
+		t.Fatal("expected Alert node")
+	}
+	title, ok := alert.FirstChild().(*AlertTitle)
+	if !ok {
+		t.Fatal("first child should be AlertTitle")
+	}
+	if title.Lines().Len() != 1 {
+		t.Fatalf("expected 1 title segment, got %d", title.Lines().Len())
+	}
+	seg := title.Lines().At(0)
+	got := string([]byte(src)[seg.Start:seg.Stop])
+	if got != "Lưu ý quan trọng" {
+		t.Errorf("expected title 'Lưu ý quan trọng', got %q", got)
+	}
+}
+
+func TestParserCustomTitleMarkdown(t *testing.T) {
+	doc := parse(t, "> [!TIP] **Đậm** và *xinh*\n> abc\n")
+	alert := findAlert(doc)
+	if alert == nil {
+		t.Fatal("expected Alert node")
+	}
+	title := alert.FirstChild()
+	var hasEmphasis bool
+	ast.Walk(title, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
+		if entering && n.Kind() == ast.KindEmphasis {
+			hasEmphasis = true
+		}
+		return ast.WalkContinue, nil
+	})
+	if !hasEmphasis {
+		t.Error("expected Emphasis (bold) in custom title")
+	}
+}
+
 // Fallback: extra text sau bracket
 func TestParserFallbackExtraText(t *testing.T) {
-	doc := parse(t, "> [!NOTE] extra text\n> content\n")
+	src := "> [!NOTE] extra text\n> content\n"
+	doc := parse(t, src)
 	alert := findAlert(doc)
-	if alert != nil {
-		t.Error("expected NO Alert for '> [!NOTE] extra text'")
+	if alert == nil {
+		t.Fatal("expected Alert for extra text")
+	}
+	seg := alert.FirstChild().Lines().At(0)
+	if got := string([]byte(src)[seg.Start:seg.Stop]); got != "extra text" {
+		t.Errorf("expected 'extra text', got %q", got)
 	}
 }
 

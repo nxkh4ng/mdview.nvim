@@ -76,7 +76,7 @@ func (r *AlertTitleRenderer) renderAlertTitle(w util.BufWriter, source []byte, n
 			w.WriteString(icon)
 		}
 
-		if kind != "" {
+		if n.Lines().Len() == 0 && kind != "" {
 			w.WriteString(strings.ToUpper(kind[:1]) + kind[1:])
 		}
 	} else {

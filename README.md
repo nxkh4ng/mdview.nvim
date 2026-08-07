@@ -20,7 +20,7 @@
   - Strikethrough
   - Definition lists
   - Auto-links
-  - Alerts: NOTE, TIP, IMPORTANT, WARNING, CAUTION
+  - Alerts: NOTE, TIP, IMPORTANT, WARNING, CAUTION with custom title
 - YAML metadata
 - Emoji support
 - Syntax highlighting for code blocks (light + dark themes)

@@ -141,10 +141,26 @@ func TestRenderFallbackBlockquote(t *testing.T) {
 	}
 }
 
-func TestRenderFallbackExtraText(t *testing.T) {
-	html := render(t, "> [!NOTE] extra\n> content\n")
-	if strings.Contains(html, "markdown-alert") {
-		t.Errorf("expected NO alert when extra text after bracket, got:\n%s", html)
+func TestRenderCustomTitle(t *testing.T) {
+	html := render(t, "> [!NOTE] Lưu ý quan trọng\n> nội dung\n")
+	if !strings.Contains(html, `markdown-alert markdown-alert-note`) {
+		t.Errorf("expected note alert, got:\n%s", html)
+	}
+	if !strings.Contains(html, "Lưu ý quan trọng") {
+		t.Errorf("expected custom title text, got:\n%s", html)
+	}
+	if strings.Contains(html, ">Note<") {
+		t.Errorf("expected NO default 'Note' title, got:\n%s", html)
+	}
+}
+
+func TestRenderCustomTitleMarkdown(t *testing.T) {
+	html := render(t, "> [!TIP] **Đậmêu**\n> abc\n")
+	if !strings.Contains(html, "<strong>Đậmêu</strong>") {
+		t.Errorf("expected <strong>Đậmêu</strong> in title, got:\n%s", html)
+	}
+	if strings.Contains(html, "Tip") {
+		t.Errorf("expected NO default 'Tip' title, got:\n%s", html)
 	}
 }
 
