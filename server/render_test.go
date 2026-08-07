@@ -429,6 +429,7 @@ func TestAlertNoteHTML(t *testing.T) {
 		t.Errorf("expected closing </div> tag, got:\n%s", html)
 	}
 }
+
 func TestAlertWarningHTML(t *testing.T) {
 	input := []byte("> [!WARNING]\n> Proceed with caution.\n")
 	html, err := markdownToHTML(input, "")
@@ -443,6 +444,7 @@ func TestAlertWarningHTML(t *testing.T) {
 		t.Errorf("expected title text 'Warning', got:\n%s", html)
 	}
 }
+
 func TestAlertRegularBlockquoteFallback(t *testing.T) {
 	input := []byte("> This is a regular blockquote.\n")
 	html, err := markdownToHTML(input, "")
@@ -457,14 +459,18 @@ func TestAlertRegularBlockquoteFallback(t *testing.T) {
 		t.Errorf("expected <blockquote> for regular quote, got:\n%s", html)
 	}
 }
-func TestAlertExtraTextFallback(t *testing.T) {
+
+func TestAlertCustomTitle(t *testing.T) {
 	input := []byte("> [!NOTE] Extra text here\n")
 	html, err := markdownToHTML(input, "")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if bytes.Contains(html, []byte("markdown-alert")) {
-		t.Errorf("should NOT render as alert when extra text follows, got:\n%s", html)
+	if !bytes.Contains(html, []byte("markdown-alert markdown-alert-note")) {
+		t.Errorf("expected alert with custom title, got:\n%s", html)
+	}
+	if !bytes.Contains(html, []byte("Extra text here")) {
+		t.Errorf("expected custom title text, got:\n%s", html)
 	}
 }

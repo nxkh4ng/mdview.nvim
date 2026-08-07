@@ -79,8 +79,6 @@ func TestHandleLocalFiles_NonExistentFile(t *testing.T) {
 // ── handleContent tests ──
 
 func TestHandleContent_ValidContent(t *testing.T) {
-	t.Parallel()
-
 	broker := NewBroker()
 	handler := handleContent(broker, 10, 10)
 
@@ -96,8 +94,6 @@ func TestHandleContent_ValidContent(t *testing.T) {
 }
 
 func TestHandleContent_InvalidJSON(t *testing.T) {
-	t.Parallel()
-
 	broker := NewBroker()
 	handler := handleContent(broker, 10, 10)
 
@@ -112,8 +108,6 @@ func TestHandleContent_InvalidJSON(t *testing.T) {
 }
 
 func TestHandleContent_OversizedBody(t *testing.T) {
-	t.Parallel()
-
 	broker := NewBroker()
 	handler := handleContent(broker, 1, 10) // 1MB limit
 
@@ -129,8 +123,6 @@ func TestHandleContent_OversizedBody(t *testing.T) {
 }
 
 func TestHandleContent_WithBaseDir(t *testing.T) {
-	t.Parallel()
-
 	broker := NewBroker()
 	handler := handleContent(broker, 10, 10)
 
@@ -146,8 +138,6 @@ func TestHandleContent_WithBaseDir(t *testing.T) {
 }
 
 func TestHandleContent_BroadcastsEvent(t *testing.T) {
-	t.Parallel()
-
 	broker := NewBroker()
 	handler := handleContent(broker, 10, 10)
 
