@@ -11,9 +11,6 @@ dev:
 	go build -C $(GO_DIR) $(GO_FLAGS) -o $(LOCAL_BUILD_PATH)/$(BINARY_NAME) .
 	ls -lha $(LOCAL_BUILD_PATH)
 
-compress:
-	upx --best $(LOCAL_BUILD_PATH)/$(BINARY_NAME)
-
 run:
 	$(LOCAL_BUILD_PATH)/$(BINARY_NAME)
 	ls -lha $(LOCAL_BUILD_PATH)

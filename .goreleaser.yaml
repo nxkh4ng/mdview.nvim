@@ -28,8 +28,3 @@ archives:
     name_template: "{{ .ProjectName }}-{{ .Os }}-{{ .Arch }}"
     files:
       - none*
-
-upx:
-  - enabled: true
-    compress: best
-    lzma: true

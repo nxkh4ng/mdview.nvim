@@ -34,10 +34,6 @@ jobs:
           cache: true
           cache-dependency-path: server/go.sum
 
-      - uses: crazy-max/ghaction-upx@v4
-        with:
-          install-only: true
-
       - uses: goreleaser/goreleaser-action@v7
         with:
           version: "~> v2"
