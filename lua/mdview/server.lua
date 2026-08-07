@@ -6,6 +6,10 @@ local binary = require("mdview.utils").binary_path
 
 function M.start(cfg)
 	if not vim.uv.fs_stat(binary) then
+		require("mdview.utils").ensure()
+	end
+
+	if not vim.uv.fs_stat(binary) then
 		vim.notify(
 			"[mdview] binary not found at: " .. binary,
 			vim.log.levels.ERROR

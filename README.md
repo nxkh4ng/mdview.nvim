@@ -54,8 +54,13 @@
 
 > [!NOTE]
 >
-> On first run, the plugin automatically downloads the latest Go binary
-> from [GitHub Release](https://github.com/nxkh4ng/mdview.nvim/releases).
+> The Go binary is downloaded from [GitHub Release](https://github.com/nxkh4ng/mdview.nvim/releases) and verified with _checksums.txt_.
+> The binary version always follows the git revision lazy.nvim checks out:
+>
+> - Pin a release with lazy's `version/tag` → the matching binary is used automatically
+>   (e.g. `version = "v1.2.3"`).
+> - `:Lazy update` or `:Lazy build mdview.nvim` re-downloads the matching binary.
+> - If the binary is missing, it is fetched automatically on `:MdviewStart`.
 
 ## Usage
 

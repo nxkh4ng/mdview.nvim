@@ -18,13 +18,22 @@ import (
 //go:embed static/*
 var staticFiles embed.FS
 
+var version = "dev"
+
 func main() {
 	host := flag.String("host", "127.0.0.1", "listen host")
 	port := flag.Int("port", 0, "listen port (0 = random)")
 	browser := flag.String("browser", "", "browser command")
 	maxBodySize := flag.Int("max-body-size", 10, "max request body size in MB")
 	renderTimeout := flag.Int("render-timeout", 10, "max render time in seconds")
+	versionFlag := flag.Bool("version", false, "print current version")
+
 	flag.Parse()
+
+	if *versionFlag {
+		fmt.Printf("mdview %s\n", version)
+		os.Exit(0)
+	}
 
 	addr := fmt.Sprintf("%s:%d", *host, *port)
 	listener, err := net.Listen("tcp", addr)
